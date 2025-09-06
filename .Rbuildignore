@@ -19,7 +19,7 @@
 ^renv$                   # (if you’re using renv, ignore the project library)
 ^renv\\.lock$            # lockfile for renv
 ^coverage$               # test coverage output
-USFarmSafetyNetLab.Rproj
+HiddenSafetynet2025.Rproj
 ^LICENSE\.md$
 ^codemeta\.json$
 ^\.github$
@@ -32,6 +32,6 @@ code_of_conduct.md
 job_lcr_estimations.sbatch
 \\.out$
 ^.*\\.pdf$
-^USFarmSafetyNetLab_.*\.pdf$
+^HiddenSafetynet2025_.*\.pdf$
 ^man/figures/
 

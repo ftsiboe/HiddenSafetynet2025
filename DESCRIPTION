@@ -1,4 +1,4 @@
-Package: hiddensafetynet
+Package: HiddenSafetynet2025
 Type: Package
 Title: US Farm Safety Net Lab
 Version: 0.0.0.9000
@@ -14,8 +14,8 @@ Description: This repository centralizes research outputs, analytical tools, and
  Coverage (PLC), Agricultural Risk Coverage (ARC), and various ad-hoc disaster
  assistance programs.
 License: GPL-3 + file LICENSE
-URL: https://github.com/you/hidden_safetynet
-BugReports: https://github.com/you/hidden_safetynet/issues
+URL: https://github.com/you/HiddenSafetynet2025
+BugReports: https://github.com/you/HiddenSafetynet2025/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

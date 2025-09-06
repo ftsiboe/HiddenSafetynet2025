@@ -60,10 +60,10 @@ setup_environment <- function(year_beg = 2015, year_end = 2024, seed = 1980632) 
   # ---- Define Subdirectories ----
   wd <- list(
     fastscratch = fastscratch,
-    dir_sim      = paste0(fastscratch, "/hidden_safetynet/output/sims/"),
-    dir_expected = paste0(fastscratch, "/hidden_safetynet/output/expected/"),
-    dir_drawfarm = paste0(fastscratch, "/hidden_safetynet/output/draw_farm/"),
-    dir_drawcost = paste0(fastscratch, "/hidden_safetynet/output/draw_cost/")
+    dir_sim      = paste0(fastscratch, "/HiddenSafetynet2025/output/sims/"),
+    dir_expected = paste0(fastscratch, "/HiddenSafetynet2025/output/expected/"),
+    dir_drawfarm = paste0(fastscratch, "/HiddenSafetynet2025/output/draw_farm/"),
+    dir_drawcost = paste0(fastscratch, "/HiddenSafetynet2025/output/draw_cost/")
   )
 
   # ---- Create Directories ----
@@ -73,9 +73,9 @@ setup_environment <- function(year_beg = 2015, year_end = 2024, seed = 1980632) 
     }
   }
 
-  if (!dir.exists("data")) dir.create("data")
-  if (!dir.exists("output")) dir.create("output")
-  if (!dir.exists("data/agentdata")) dir.create("data/agentdata")
+  if (!dir.exists("data-raw/data")) dir.create("data")
+  if (!dir.exists("data-raw/output")) dir.create("output")
+  if (!dir.exists("data-raw/data/agentdata")) dir.create("data/agentdata")
 
   # ---- Set Options ----
   options(scipen = 999)
