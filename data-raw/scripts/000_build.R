@@ -32,14 +32,18 @@ devtools::build_manual(path = getwd())
 
 # 8) Initialize environment
 study_env <- setup_environment()
+Keep.List<-c("Keep.List",ls())
 
-# Clean and enrich RMA Summary of Business (SOB) data
+# 9) Clean and enrich RMA Summary of Business (SOB) data
+rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 clean_rma_sobtpu()
 
 # 10) Build SCO/ECO/Area ADM table for a given year (adds SCO88/SCO90)
+rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 plan(list(tweak(multisession, workers = 4)))
+
 data <- data.table::rbindlist(
-  lapply(
+  future_lapply(
     study_env$year_beg:study_env$year_end,
     clean_rma_sco_and_eco_adm
   ),
