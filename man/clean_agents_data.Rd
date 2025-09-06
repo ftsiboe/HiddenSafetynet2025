@@ -21,7 +21,7 @@ Default: \code{"data-raw/data/cleaned_rma_sobtpu.rds"}.}
 admin RDS file. Default: \code{"data-raw/data/cleaned_rma_sco_and_eco_adm.rds"}.}
 
 \item{output_directory}{Directory to save output RDS file. Created if missing.
-Default: \code{"data-raw/data/cleaned_agents_data"}.}
+Default: \code{"data/cleaned_agents_data"}.}
 }
 \value{
 Returns the input \code{year} on success, with attributes for \code{save_path}

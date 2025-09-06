@@ -11,7 +11,7 @@
 #' @param cleaned_rma_sco_and_eco_adm_file_path Path to cleaned RMA SCO & ECO
 #'   admin RDS file. Default: `"data-raw/data/cleaned_rma_sco_and_eco_adm.rds"`.
 #' @param output_directory Directory to save output RDS file. Created if missing.
-#'   Default: `"data-raw/data/cleaned_agents_data"`.
+#'   Default: `"data/cleaned_agents_data"`.
 #'
 #' @return Returns the input `year` on success, with attributes for `save_path`
 #'   and number of rows. Returns `NULL` on error.

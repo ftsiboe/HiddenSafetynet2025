@@ -2,12 +2,12 @@
 rm(list = ls(all = TRUE)); gc()
 
 # 1) Load required packages (assumes they’re installed & on library path)
-library(data.table); library(rfcip); library(rfcipCalcPass);library(future.apply)
+library(data.table); library(rfcip)
 
 # 2) Clean generated artifacts
 unlink(c(
   "NAMESPACE",
-  list.files("./data", full.names = TRUE),
+  #list.files("./data", full.names = TRUE),
   list.files("./man",  full.names = TRUE)
 ))
 
@@ -56,5 +56,8 @@ lapply(
   clean_agents_data
 )
 
-
+# 12) Build panel of supplemental insurance availability (offering) and adoption (acres)
+build_supplemental_offering_and_adoption(
+    cleaned_rma_sobtpu_file_path = "data/cleaned_rma_sobtpu.rds",
+    output_directory = "data")
 
