@@ -24,7 +24,7 @@
 # Author: Francis Tsiboe
 ###############################################################################
 rm(list=ls(all=TRUE));gc()
-source("scripts/000_hidden_safetynet_helpers.R")
+devtools::document()
 study_env <- setup_environment()
 
 # Pull Statement of Business (SOB) data for study year
@@ -140,5 +140,5 @@ for (xx in c("sco", "eco90", "eco95")) {
 data <- data[!data$insured_acres %in% c(0, NA, NaN, Inf, -Inf), ]
 
 # Save the result as a data.table RDS for downstream use
-saveRDS(as.data.table(data), file = "data/cleaned_rma_sobtpu.rds")
+saveRDS(as.data.table(data), file = "data-raw/data/cleaned_rma_sobtpu.rds")
 

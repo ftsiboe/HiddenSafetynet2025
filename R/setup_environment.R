@@ -73,9 +73,9 @@ setup_environment <- function(year_beg = 2015, year_end = 2024, seed = 1980632) 
     }
   }
 
-  if (!dir.exists("data-raw/data")) dir.create("data")
-  if (!dir.exists("data-raw/output")) dir.create("output")
-  if (!dir.exists("data-raw/data/agentdata")) dir.create("data/agentdata")
+  if (!dir.exists("data-raw/data")) dir.create("data-raw/data", recursive = TRUE)
+  if (!dir.exists("data-raw/output")) dir.create("data-raw/output", recursive = TRUE)
+  if (!dir.exists("data-raw/data/agentdata")) dir.create("data-raw/data/agentdata", recursive = TRUE)
 
   # ---- Set Options ----
   options(scipen = 999)
