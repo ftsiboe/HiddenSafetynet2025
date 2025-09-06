@@ -7,6 +7,27 @@ study_env <- setup_environment()
 
 plan(list(tweak(multisession, workers = 4)))
 
+clean_agents_data(
+  year = 2021,
+  cleaned_rma_sobtpu_file_path = "data-raw/data/cleaned_rma_sobtpu.rds",
+  cleaned_rma_sco_and_eco_adm_file_path = "data-raw/data/cleaned_rma_sco_and_eco_adm.rds",
+  output_directory = "data-raw/data/cleaned_agents_data")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 future_lapply(
   study_env$year_beg:study_env$year_end,
   function(year){

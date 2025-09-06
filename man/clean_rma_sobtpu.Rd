@@ -4,17 +4,14 @@
 \alias{clean_rma_sobtpu}
 \title{Clean and enrich RMA Summary of Business (SOB) data}
 \usage{
-clean_rma_sobtpu(
-  study_env = setup_environment(),
-  output_directory = "data-raw/data"
-)
+clean_rma_sobtpu(study_env = setup_environment(), output_directory = "data")
 }
 \arguments{
 \item{study_env}{A list-like environment produced by \code{\link[=setup_environment]{setup_environment()}} that must
 include \code{year_beg} and \code{year_end} (inclusive integers). Defaults to \code{setup_environment()}.}
 
 \item{output_directory}{Character string specifying the directory where the processed
-\code{.rds} file should be saved. Defaults to \code{"data-raw/data"}. The file will be
+\code{.rds} file should be saved. Defaults to \code{"data"}. The file will be
 named \code{"cleaned_rma_sobtpu.rds"}.}
 }
 \value{

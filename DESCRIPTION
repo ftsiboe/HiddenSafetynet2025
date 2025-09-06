@@ -1,5 +1,5 @@
 Package: HiddenSafetynet2025
-Type: Study Replication Package
+Type: Package
 Title: HiddenSafetynet2025
 Version: 0.0.0.9000
 Author: Francis Tsiboe [aut, cre] (<https://orcid.org/0000-0001-5984-1072>)
@@ -14,7 +14,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Depends: R (>= 4.1.0)
-Imports: data.table, rfcip, future.apply
+Imports: data.table, rfcip
 Remotes: github::dylan-turner25/rfcip, github::UrbanInstitute/urbnmapr, github::dylan-turner25/rfsa
 Suggests: dplyr, tidyr, knitr, rmarkdown, mockery,  withr, testthat (>= 3.0.0)
 LazyData: true

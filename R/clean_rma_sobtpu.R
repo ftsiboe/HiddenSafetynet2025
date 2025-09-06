@@ -7,7 +7,7 @@
 #' @param study_env A list-like environment produced by [setup_environment()] that must
 #'   include `year_beg` and `year_end` (inclusive integers). Defaults to `setup_environment()`.
 #' @param output_directory Character string specifying the directory where the processed
-#'   `.rds` file should be saved. Defaults to `"data-raw/data"`. The file will be
+#'   `.rds` file should be saved. Defaults to `"data"`. The file will be
 #'   named `"cleaned_rma_sobtpu.rds"`.
 #'
 #' @return A character message describing the processed year range and number of
@@ -22,7 +22,7 @@
 #' The output file will be written to `file.path(output_directory, "cleaned_rma_sobtpu.rds")`.
 #' The directory is created if it does not exist.
 #' @export
-clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory = "data-raw/data") {
+clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory = "data") {
   # Pull Summary of Business (SOB) data for study year
   sob <- get_sob_data(sob_version = "sobtpu", year = study_env$year_beg:study_env$year_end)
 

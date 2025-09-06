@@ -38,7 +38,7 @@ Keep.List<-c("Keep.List",ls())
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 clean_rma_sobtpu()
 
-# 10) Build SCO/ECO/Area ADM table for a given year (adds SCO88/SCO90)
+# 10) Build SCO/ECO/Area ADM table (adds SCO88/SCO90)
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 data <- data.table::rbindlist(
   lapply(
@@ -47,5 +47,14 @@ data <- data.table::rbindlist(
   ),
   fill = TRUE
 )
-saveRDS(data,file ="data-raw/data/cleaned_rma_sco_and_eco_adm.rds")
+saveRDS(data,file ="data/cleaned_rma_sco_and_eco_adm.rds")
+
+# 11) Clean agent-level data
+rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
+lapply(
+  study_env$year_beg:study_env$year_end,
+  clean_agents_data
+)
+
+
 

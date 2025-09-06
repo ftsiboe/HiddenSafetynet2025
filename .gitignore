@@ -6,3 +6,10 @@ job_*.sbatch
 slurm-*.out
 data-raw/*
 !data-raw/scripts/
+data/*.rds
+data/*/*.rds
+data/*/*/*.rds
+output
+output/*.rds
+
+

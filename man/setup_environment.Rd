@@ -4,7 +4,12 @@
 \alias{setup_environment}
 \title{Setup Project Environment}
 \usage{
-setup_environment(year_beg = 2015, year_end = 2024, seed = 1980632)
+setup_environment(
+  year_beg = 2015,
+  year_end = 2024,
+  seed = 1980632,
+  fastscratch_root = NULL
+)
 }
 \arguments{
 \item{year_beg}{Integer. Beginning year of the analysis (default: 2015).}
@@ -12,43 +17,46 @@ setup_environment(year_beg = 2015, year_end = 2024, seed = 1980632)
 \item{year_end}{Integer. Ending year of the analysis (default: 2024).}
 
 \item{seed}{Integer. Random seed for reproducibility (default: 1980632).}
+
+\item{fastscratch_root}{Optional character. Root directory where intermediate
+files from simulations and estimations will be written for later aggregation.
+If \code{NULL}, it is set automatically based on the operating system:
+\itemize{
+\item Windows: \code{"C:/fastscratch"}
+\item Linux/macOS: \code{"/fastscratch/<username>"}
+}}
 }
 \value{
-A named list with:
+A list with:
 \describe{
-\item{wd}{List of working directory paths (fastscratch + subfolders).}
-\item{year_beg}{The starting year.}
-\item{year_end}{The ending year.}
+\item{wd}{Named list of working directories (fastscratch root and subfolders).}
+\item{year_beg}{Starting year (integer).}
+\item{year_end}{Ending year (integer).}
 }
 }
 \description{
-Loads project settings, creates directories, sets R options and a random seed,
-and stores the analysis year range for the supplemental protection project.
+Loads project settings, creates working directories (both under a fast scratch
+area and in the project), sets useful \code{options()}, fixes the RNG seed, and
+stores the analysis year range.
 }
 \details{
-This function:
+Creates these directories (if absent):
 \itemize{
-\item Detects the operating system and sets a root \code{fastscratch} directory:
-\itemize{
-\item Windows - \code{"C:/fastscratch"}
-\item Linux/macOS - \code{"/fastscratch/<username>"}
+\item Fast scratch tree (for large, intermediate outputs):
+\code{<fastscratch_root>/HiddenSafetynet2025/output/} with subfolders
+\code{sims}, \code{expected}, \code{draw_farm}, \code{draw_cost}.
+\item Project-local (for smaller, version-controlled artifacts):
+\code{data/}, \code{data/output/}, \code{data/cleaned_agents_data/}.
 }
-\item Creates subdirectories for simulation results, expected values, draw-farm,
-and draw-cost outputs under \code{fastscratch/HiddenSafetynet2025/output/}.
-\item Ensures \code{data-raw/data}, \code{data-raw/output}, and
-\code{data-raw/data/agentdata} exist in the project root.
-\item Sets R options:
-\itemize{
-\item \code{scipen = 999} - prefer fixed notation over scientific
-\item \code{future.globals.maxSize = 8 * 1024^3} (~8 GiB)
-\item \code{dplyr.summarise.inform = FALSE} - suppress summarise messages
-}
-\item Sets the global RNG seed via \code{set.seed(seed)}.
-}
-}
-\examples{
-env <- setup_environment(year_beg = 2015, year_end = 2024, seed = 42)
-env$wd$dir_sim
-env$year_beg
 
+Sets:
+\itemize{
+\item \code{options(scipen = 999)}
+\item \code{options(future.globals.maxSize = 8 * 1024^3)}  (= 8 GiB)
+\item \code{options(dplyr.summarise.inform = FALSE)}
+\item \code{set.seed(seed)}
+}
+
+Requires the packages \pkg{future.apply}, \pkg{rfcip}, \pkg{data.table},
+and \pkg{rfcipCalcPass}.
 }

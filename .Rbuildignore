@@ -24,6 +24,7 @@ HiddenSafetynet2025.Rproj
 ^codemeta\.json$
 ^\.github$
 data-raw
+output
 README.Rmd
 data/README.Rmd
 data/README.md
@@ -33,5 +34,8 @@ job_lcr_estimations.sbatch
 \\.out$
 ^.*\\.pdf$
 ^HiddenSafetynet2025_.*\.pdf$
-^man/figures/
+^data/[^/]+\.rds$
+^data/[^/]+/[^/]+\.rds$
+^data/[^/]+/[^/]+/[^/]+\.rds$
+
 
