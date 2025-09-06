@@ -6,7 +6,7 @@
 \alias{HiddenSafetynet2025-package}
 \title{HiddenSafetynet2025: US Farm Safety Net Lab}
 \description{
-This repository centralizes research outputs, analytical tools, and resources for exploring and evaluating the United States agricultural safety net programs. It supports analysis of key programs including the Federal Crop Insurance Program (FCIP), the Noninsured Crop Disaster Assistance Program (NAP), Price Loss Coverage (PLC), Agricultural Risk Coverage (ARC), and various ad-hoc disaster assistance programs.
+Replication Package for Hidden Safety Net of Underutilized Supplemental Insurance in US Agriculture.
 }
 \seealso{
 Useful links:

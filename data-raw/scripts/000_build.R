@@ -1,25 +1,49 @@
+# 0) Hard reset of workspace
+rm(list = ls(all = TRUE)); gc()
 
-rm(list=ls(all=TRUE));gc()
+# 1) Load required packages (assumes they’re installed & on library path)
+library(data.table); library(rfcip); library(rfcipCalcPass)
 
-library(data.table);library(rfcip);library(rfcipCalcPass)
+# 2) Clean generated artifacts
+unlink(c(
+  "NAMESPACE",
+  list.files("./data", full.names = TRUE),
+  list.files("./man",  full.names = TRUE)
+))
 
-unlink(c("NAMESPACE",list.files("./data", full.names = TRUE),list.files("./man", full.names = TRUE)))
-
+# 3) Rebuild documentation from roxygen comments
 devtools::document()
 
-for(i in list.files("R",full.names = T)){
-  print(paste0("********************",i,"********************"))
+# 4) Sanity pass through R/ sources: shows any non-ASCII characters per file
+for (i in list.files("R", full.names = TRUE)) {
+  print(paste0("********************", i, "********************"))
   tools::showNonASCIIfile(i)
 }
 
+# 5) Check man pages only (faster than full devtools::check)
 devtools::check_man()
 
+# 6) Build PDF manual into the current working directory
 devtools::build_manual(path = getwd())
 
-#devtools::test()
+# 7) Optional: run tests / full package check (uncomment when needed)
+# devtools::test()
+# devtools::check()
 
-#devtools::check()
-
+# 8) Initialize environment
 study_env <- setup_environment()
 
+# Clean and enrich RMA Summary of Business (SOB) data
 clean_rma_sobtpu()
+
+# 10) Build SCO/ECO/Area ADM table for a given year (adds SCO88/SCO90)
+plan(list(tweak(multisession, workers = 4)))
+data <- data.table::rbindlist(
+  lapply(
+    study_env$year_beg:study_env$year_end,
+    clean_rma_sco_and_eco_adm
+  ),
+  fill = TRUE
+)
+
+plan(sequential)

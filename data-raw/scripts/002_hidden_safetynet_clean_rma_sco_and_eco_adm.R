@@ -10,8 +10,8 @@ plan(list(tweak(multisession, workers = 4)))
 data <- data.table::rbindlist(
   lapply(
     study_env$year_beg:study_env$year_end,
-    function(crop_yr){
-      # crop_yr <- 2022
+    function(year){
+      # year <- 2022
 
       admfull <- data.table::rbindlist(
         lapply(
@@ -23,7 +23,7 @@ data <- data.table::rbindlist(
 
               download.file(
                 paste0("https://github.com/ftsiboe/USFarmSafetyNetLab/releases/download/adm_compressed/",
-                       crop_yr,"_",plan,"_plans_adm.rds"),
+                       year,"_",plan,"_plans_adm.rds"),
                 adm, mode = "wb", quiet = TRUE)
 
               adm <- readRDS(adm)
@@ -67,7 +67,7 @@ data <- data.table::rbindlist(
 
       rm(ayp);gc()
 
-      if(crop_yr>=2021){
+      if(year>=2021){
 
         eco90 <- admfull[(insurance_plan_code %in% 87:89 & round(coverage_level_percent*100) %in% 90)
                          , c("commodity_year", FCIP_INSURANCE_POOL, "insurance_plan_code","base_rate"), with = FALSE]
@@ -113,4 +113,7 @@ data <- data.table::rbindlist(
 plan(sequential)
 
 saveRDS(data,file ="data-raw/data/cleaned_rma_sco_and_eco_adm.rds")
+
+
+
 
