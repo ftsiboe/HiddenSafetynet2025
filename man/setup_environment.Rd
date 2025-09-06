@@ -50,5 +50,4 @@ and draw-cost outputs.
 env <- setup_environment(year_beg = 2015, year_end = 2024, seed = 42)
 env$wd$dir_sim
 env$year_beg
-
 }

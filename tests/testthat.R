@@ -8,6 +8,6 @@
 
 library(testthat)
 library(data.table)
-library(hidden_safetynet)
-test_check("hidden_safetynet")
+library(hiddensafetynet)
+test_check("hiddensafetynet")
 

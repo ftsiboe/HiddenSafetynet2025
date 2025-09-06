@@ -39,7 +39,7 @@
 #' env <- setup_environment(year_beg = 2015, year_end = 2024, seed = 42)
 #' env$wd$dir_sim
 #' env$year_beg
-#'
+#' @import data.table rfcip future.apply
 #' @export
 setup_environment <- function(year_beg = 2015, year_end = 2024, seed = 1980632) {
   # ---- Load Required Libraries ----
