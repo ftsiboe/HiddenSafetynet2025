@@ -41,7 +41,7 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
 
   # ===== Base data aggregation =====
   data <- sob[
-    insurance_plan_code %in% c(1:3, 90),
+    insurance_plan_code %in% 1:3,
     .(
       insured_acres        = sum(net_reporting_level_amount,   na.rm = TRUE),
       liability_amount     = sum(liability_amount,             na.rm = TRUE),
@@ -49,7 +49,8 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
       subsidy_amount       = sum(subsidy_amount,               na.rm = TRUE),
       indemnity_amount     = sum(indemnity_amount,             na.rm = TRUE)
     ),
-    by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, rfcipCalcPass::FCIP_INSURANCE_ELECTION)
+    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+           "unit_structure_code", "insurance_plan_code", "coverage_type_code", "coverage_level_percent")
   ][
     !insured_acres %in% c(0, NA, NaN, Inf, -Inf)
   ]
@@ -58,20 +59,24 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
   sco_data <- sob[
     insurance_plan_code %in% c(31:33),
     .(sco = sum(endorsed_commodity_reporting_level_amount, na.rm = TRUE)),
-    by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent")
+    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+           "insurance_plan_code", "coverage_level_percent")
   ][
     , insurance_plan_code := insurance_plan_code - 30
   ][
     data[, .(insured_acres = sum(insured_acres, na.rm = TRUE)),
-         by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent")],
-    on = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent"),
+         by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+                "insurance_plan_code", "coverage_level_percent")],
+    on = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+           "insurance_plan_code", "coverage_level_percent"),
     nomatch = 0
   ][
     , sco := sco / insured_acres
   ]
 
   sco_data <- unique(
-    sco_data[, c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent", "sco"), with = FALSE]
+    sco_data[, c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+                 "insurance_plan_code", "coverage_level_percent", "sco"), with = FALSE]
   )
   data <- merge(data, sco_data, by = intersect(names(data), names(sco_data)), all = TRUE)
 
@@ -79,7 +84,8 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
   eco_data <- sob[
     insurance_plan_code %in% c(87:89),
     .(eco = sum(endorsed_commodity_reporting_level_amount, na.rm = TRUE)),
-    by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent")
+    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+           "insurance_plan_code", "coverage_level_percent")
   ][
     , insurance_plan_code := insurance_plan_code - 86
   ][
@@ -90,8 +96,8 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
 
   eco_data <- as.data.table(eco_data)[
     data[, .(insured_acres = sum(insured_acres, na.rm = TRUE)),
-         by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code")],
-    on = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code"),
+         by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code", "insurance_plan_code")],
+    on = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code", "insurance_plan_code"),
     nomatch = 0
   ][
     , eco90 := eco90 / insured_acres
@@ -100,7 +106,8 @@ clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory =
   ]
 
   eco_data <- unique(
-    eco_data[, c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "eco90", "eco95"), with = FALSE]
+    eco_data[, c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
+                 "insurance_plan_code", "eco90", "eco95"), with = FALSE]
   )
   data <- merge(data, eco_data, by = intersect(names(data), names(eco_data)), all = TRUE)
 

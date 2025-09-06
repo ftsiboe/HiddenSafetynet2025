@@ -16,8 +16,6 @@
 #'
 #' @note
 #' Requires internet access. Missing plan files for a year are skipped silently.
-#' Uses \code{rfcipCalcPass::FCIP_INSURANCE_POOL} and \code{rfcipCalcPass::FCIP_INSURANCE_ELECTION} (character vectors of column names)
-#' defined elsewhere for grouping.
 #'
 #' @import data.table
 #' @importFrom utils download.file
@@ -55,10 +53,12 @@ clean_rma_sco_and_eco_adm <- function(year){
 
           # Aggregation keys:
           #   - commodity_year
-          #   - vectors of column names: rfcipCalcPass::FCIP_INSURANCE_POOL, rfcipCalcPass::FCIP_INSURANCE_ELECTION (defined elsewhere)
+          #   - vectors of column names: "state_code", "county_code", "commodity_code", "type_code", "practice_code" ,
+          #                               "unit_structure_code", "insurance_plan_code", "coverage_type_code", "coverage_level_percent"
           #   - area loss band when present
           aggregation_point <-  names(adm)[
-            names(adm) %in% c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, rfcipCalcPass::FCIP_INSURANCE_ELECTION,
+            names(adm) %in% c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code" ,
+                              "unit_structure_code", "insurance_plan_code", "coverage_type_code", "coverage_level_percent",
                               "area_loss_start_percent","area_loss_end_percent")]
 
           # Collapse ADM to mean values by the chosen keys
@@ -80,7 +80,8 @@ clean_rma_sco_and_eco_adm <- function(year){
   ayp <- ayp[!base_rate %in% c(0,NA,NaN,Inf,-Inf)]
   # Average base rate by year, pool, plan, and coverage level
   ayp <- ayp[,.(base_rate = mean(base_rate,na.rm=T)),
-             by = c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code", "coverage_level_percent")];gc()
+             by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code",
+                    "practice_code" , "insurance_plan_code", "coverage_level_percent")];gc()
   ayp <- as.data.frame(ayp)
   # Create labels such as "ayp85","ayp90" from coverage_level_percent
   ayp$coverage_level_percent <- paste0("ayp",round(ayp$coverage_level_percent*100))
@@ -110,13 +111,15 @@ clean_rma_sco_and_eco_adm <- function(year){
 
     # ECO at 90% (plans 87-89); retag plan codes to align with SCO plans (-56 to 31-33)
     eco90 <- admfull[(insurance_plan_code %in% 87:89 & round(coverage_level_percent*100) %in% 90)
-                     , c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code","base_rate"), with = FALSE]
+                     , c("commodity_year", "state_code", "county_code", "commodity_code", "type_code",
+                         "practice_code" , "insurance_plan_code","base_rate"), with = FALSE]
     setnames(eco90,old = c("base_rate"),new = c("eco90"))
     eco90[,insurance_plan_code := insurance_plan_code - 56]
 
     # SCO at 85% (plans 31-33), used as the baseline for ECO-anchored interpolation
     sco85 <- admfull[(insurance_plan_code %in% 31:33 & round(coverage_level_percent*100) %in% 85)
-                     , c("commodity_year", rfcipCalcPass::FCIP_INSURANCE_POOL, "insurance_plan_code","base_rate"), with = FALSE]
+                     , c("commodity_year", "state_code", "county_code", "commodity_code", "type_code",
+                         "practice_code" , "insurance_plan_code","base_rate"), with = FALSE]
     setnames(sco85,old = c("base_rate"),new = c("sco85"))
 
     # --- ECO-anchored SCO88 ---
