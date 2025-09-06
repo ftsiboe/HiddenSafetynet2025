@@ -14,7 +14,7 @@ setup_environment(year_beg = 2015, year_end = 2024, seed = 1980632)
 \item{seed}{Integer. Random seed for reproducibility (default: 1980632).}
 }
 \value{
-A named list containing:
+A named list with:
 \describe{
 \item{wd}{List of working directory paths (fastscratch + subfolders).}
 \item{year_beg}{The starting year.}
@@ -22,32 +22,33 @@ A named list containing:
 }
 }
 \description{
-Loads required libraries, initializes directories, R options, random seed,
-and analysis year range for the supplemental protection project.
+Loads project settings, creates directories, sets R options and a random seed,
+and stores the analysis year range for the supplemental protection project.
 }
 \details{
 This function:
 \itemize{
-\item Loads the following packages:
-- \code{future.apply}
-- \code{rfcip}
-- \code{data.table}
-- \code{rfcipCalcPass}
-\item Detects the operating system and sets the root \code{fastscratch} directory:
-- Windows - \code{"C:/fastscratch/"}
-- Linux/Mac - \code{"/fastscratch/<username>"}
-\item Creates subdirectories for simulation, expected values, draw-farm,
-and draw-cost outputs.
-\item Ensures \verb{data/} and \verb{output/} directories exist in the project root.
+\item Detects the operating system and sets a root \code{fastscratch} directory:
+\itemize{
+\item Windows - \code{"C:/fastscratch"}
+\item Linux/macOS - \code{"/fastscratch/<username>"}
+}
+\item Creates subdirectories for simulation results, expected values, draw-farm,
+and draw-cost outputs under \code{fastscratch/HiddenSafetynet2025/output/}.
+\item Ensures \code{data-raw/data}, \code{data-raw/output}, and
+\code{data-raw/data/agentdata} exist in the project root.
 \item Sets R options:
-- \code{scipen = 999} - disables scientific notation
-- \code{future.globals.maxSize} - increases memory for the \code{future} package
-- \code{dplyr.summarise.inform = FALSE} - suppresses summarise messages
-\item Sets a random seed for reproducibility.
+\itemize{
+\item \code{scipen = 999} - prefer fixed notation over scientific
+\item \code{future.globals.maxSize = 8 * 1024^3} (~8 GiB)
+\item \code{dplyr.summarise.inform = FALSE} - suppress summarise messages
+}
+\item Sets the global RNG seed via \code{set.seed(seed)}.
 }
 }
 \examples{
 env <- setup_environment(year_beg = 2015, year_end = 2024, seed = 42)
 env$wd$dir_sim
 env$year_beg
+
 }

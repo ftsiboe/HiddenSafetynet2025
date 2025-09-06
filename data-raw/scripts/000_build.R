@@ -14,3 +14,7 @@ devtools::build_manual(path = getwd())
 devtools::test()
 
 devtools::check()
+
+devtools::document()
+study_env <- setup_environment()
+clean_rma_sobtpu()

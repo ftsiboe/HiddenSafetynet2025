@@ -23,7 +23,7 @@ VignetteBuilder: knitr
 Depends: R (>= 4.1.0)
 Imports: data.table, rfcip, future.apply
 Remotes: github::dylan-turner25/rfcip, github::UrbanInstitute/urbnmapr, github::dylan-turner25/rfsa
-Suggests: dplyr, rvest, purrr, rfcip, knitr, rmarkdown, testthat (>= 3.0.0)
+Suggests: dplyr, tidyr, knitr, rmarkdown, mockery,  withr, testthat (>= 3.0.0)
 LazyData: true
 Cite-us: If you find it useful, please consider staring the repository and citing the following studies
   - Tsiboe, F. and Turner, D. (2025). "Incorporating buy‐up price loss coverage into the United States
