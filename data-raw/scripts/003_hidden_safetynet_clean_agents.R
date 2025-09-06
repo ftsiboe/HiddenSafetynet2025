@@ -9,7 +9,7 @@ plan(list(tweak(multisession, workers = 4)))
 
 future_lapply(
   study_env$year_beg:study_env$year_end,
-  function(crop_yr){
+  function(year){
     tryCatch({
       # year <- 2015
 

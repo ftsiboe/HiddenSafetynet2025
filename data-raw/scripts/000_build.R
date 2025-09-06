@@ -2,7 +2,7 @@
 rm(list = ls(all = TRUE)); gc()
 
 # 1) Load required packages (assumes they’re installed & on library path)
-library(data.table); library(rfcip); library(rfcipCalcPass)
+library(data.table); library(rfcip); library(rfcipCalcPass);library(future.apply)
 
 # 2) Clean generated artifacts
 unlink(c(
@@ -40,14 +40,12 @@ clean_rma_sobtpu()
 
 # 10) Build SCO/ECO/Area ADM table for a given year (adds SCO88/SCO90)
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
-plan(list(tweak(multisession, workers = 4)))
-
 data <- data.table::rbindlist(
-  future_lapply(
+  lapply(
     study_env$year_beg:study_env$year_end,
     clean_rma_sco_and_eco_adm
   ),
   fill = TRUE
 )
+saveRDS(data,file ="data-raw/data/cleaned_rma_sco_and_eco_adm.rds")
 
-plan(sequential)

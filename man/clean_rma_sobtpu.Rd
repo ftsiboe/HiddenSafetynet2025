@@ -2,7 +2,7 @@
 % Please edit documentation in R/clean_rma_sobtpu.R
 \name{clean_rma_sobtpu}
 \alias{clean_rma_sobtpu}
-\title{Clean and enrich RMA Statement of Business (SOB) data}
+\title{Clean and enrich RMA Summary of Business (SOB) data}
 \usage{
 clean_rma_sobtpu(
   study_env = setup_environment(),
@@ -22,7 +22,7 @@ A character message describing the processed year range and number of
 output rows; the main side effect is writing an \code{.rds} file to disk.
 }
 \description{
-Processes RMA Statement of Business (SOB) data to produce an analysis-ready
+Processes RMA Summary of Business (SOB) data to produce an analysis-ready
 dataset with aggregated core insurance metrics and \strong{shares} of Supplemental
 Coverage Option (SCO) and Enhanced Coverage Option (ECO) by coverage level.
 }
