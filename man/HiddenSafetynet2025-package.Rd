@@ -4,7 +4,7 @@
 \name{HiddenSafetynet2025-package}
 \alias{HiddenSafetynet2025}
 \alias{HiddenSafetynet2025-package}
-\title{HiddenSafetynet2025: US Farm Safety Net Lab}
+\title{HiddenSafetynet2025: HiddenSafetynet2025}
 \description{
 Replication Package for Hidden Safety Net of Underutilized Supplemental Insurance in US Agriculture.
 }

@@ -1,6 +1,6 @@
 Package: HiddenSafetynet2025
-Type: Package
-Title: US Farm Safety Net Lab
+Type: Study Replication Package
+Title: HiddenSafetynet2025
 Version: 0.0.0.9000
 Author: Francis Tsiboe [aut, cre] (<https://orcid.org/0000-0001-5984-1072>)
 Maintainer: Francis Tsiboe <ftsiboe@hotmail.com>

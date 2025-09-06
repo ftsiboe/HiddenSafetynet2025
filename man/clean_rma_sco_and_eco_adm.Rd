@@ -24,6 +24,4 @@ and returns the cleaned, stacked table.
 }
 \note{
 Requires internet access. Missing plan files for a year are skipped silently.
-Uses \code{rfcipCalcPass::FCIP_INSURANCE_POOL} and \code{rfcipCalcPass::FCIP_INSURANCE_ELECTION} (character vectors of column names)
-defined elsewhere for grouping.
 }
