@@ -59,12 +59,11 @@ setup_environment <- function(
   if (year_beg > year_end) stop("`year_beg` must be <= `year_end`.", call. = FALSE)
 
   # ---- Determine OS + username ----
-  if (is.null(fastscratch_root)) {
+  if(is.null(fastscratch_root)) {
     sysname <- tolower(as.character(Sys.info()[["sysname"]]))
-    user    <- Sys.getenv("USER", unset = Sys.getenv("USERNAME", unset = "unknown"))
+    user    <- Sys.info()['user']
     if (identical(user, "") || is.na(user)) user <- "unknown"
-
-    fastscratch_root <- if (grepl("windows", sysname)) "C:/fastscratch" else file.path("/fastscratch", user)
+    fastscratch_root <- ifelse(grepl("windows", sysname),"C:/fastscratch",file.path("/fastscratch", user))
   }
 
   # Ensure root exists (or create)

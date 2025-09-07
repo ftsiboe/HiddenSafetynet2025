@@ -11,6 +11,7 @@ Amy Hagerman, Department of Agricultural Economics, Oklahoma State
 University, Stillwater, OK 74078
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 <!-- badges: start -->
 
 [![Project Status: Active – Stable and actively
@@ -49,21 +50,61 @@ insurance utilization
 
 ------------------------------------------------------------------------
 
+Here’s how these functions relate—think of them as a single pipeline
+that builds one simulation draw, computes the base policy, layers on
+SCO/ECO endorsements in a few different ways, aggregates, and writes the
+result. dispatcher_supplemental_simulation() ├─
+build_agent_simulation_data(year, sim, agents_dir) │ • Loads cleaned
+agent rows for {year} │ • Unnests per-draw yields/prices; filters to the
+requested draw(s) │ • Renames to canonical fields, adds expected/final
+county yields │ • Computes per-row revenue │ → returns agent-level
+simulation panel (data.table) │ ├─
+compute_base_policy_outcomes(cleaned_agents_data) │ • Using the panel
+above, computes: guarantees, insured_acres, │ liability, premiums
+(total/subsidy/producer), indemnity, revenue, │ price-risk adjusted
+guarantee, etc. │ → returns base policy rows (same keys + monetary
+outputs) │ ├─ study_scenarios(year) │ • Defines the SCO/ECO “offerings”
+(plan code ↔ trigger ↔ subsidy factor) │ • Defines “full participation”
+SCO/ECO mixes to test │ → returns {offerings, full_participation} │ ├─
+(prep ADM) │ • Reads SCO/ECO ADM, filters to {year}, matches to
+base-policy keys, │ averages base_rate within key, drops invalid/zero
+rates │ ├─ lapply(offerings, … compute_supplemental_factors()) │ • For
+each offered endorsement (plan/trigger/subsidy): │ - Aligns plan codes
+(31–33, 51–53, 87–89 …) via offsets │ - Computes shallow-loss protection
+range, premium pieces, │ and endorsement indemnity │ - Emits scaled
+monetary fields with a `sup` label │ → returns stacked endorsement
+“factors” (data.table) │ ├─
+compute_supplemental_current(base_policy_data, supplemental_factors) │ •
+Uses the base rows’ `sco/eco90/eco95` weights │ • Keeps factors for
+{SCO8665, ECO9044, ECO9544} │ • Scales the endorsement \$ by the
+matching weight, aggregates by keys │ • Appends base outcomes; labels
+combination = “Basic+CURRENT” │ ├─
+compute_supplemental_full(base_policy_data,
+supplemental_factors\[picked\], picks) │ • Takes a chosen set of sup
+labels (from study_scenarios\$full_participation) │ • Fully aggregates
+those endorsement \$ by keys │ • Appends base outcomes; labels
+“Basic+<joined picks>” │ ├─ lapply(adoption_rate ∈ {5,…,100}, …
+compute_supplemental_incremental()) │ • Joins `SCO8665` factors to base
+keys │ • Scales endorsement \$ by (adoption_rate / 100) │ • Appends base
+outcomes; labels “Basic+ALTXXX” │ ├─ (base-only rollup) │ • Aggregates
+base outcomes alone; labels “Basic only” │ └─ rbind(base-only, current,
+full, incremental) → saveRDS(“simXXX.rds”)
+
 **📚 Citation** If you find it useful, please consider staring the
 repository and citing the following studies
 
--   Tsiboe, F. and Turner, D. (2025). [Incorporating buy‐up price loss
-    coverage into the United States farm safety
-    net](https://onlinelibrary.wiley.com/doi/full/10.1002/aepp.13536).
-    Applied Economic Perspectives and Policy.
--   Tsiboe, F., et al. (2025). [Risk reduction impacts of crop insurance
-    in the United
-    States](https://onlinelibrary.wiley.com/doi/full/10.1002/aepp.13513#:~:text=In%20other%20words%2C%20on%20average,%2Dcrop%2Dyear%20revenue%20variability).
-    Applied Economic Perspectives and Policy.
--   Gaku, S. and Tsiboe, F. (2024). [Evaluation of alternative farm
-    safety net program combination
-    strategies](https://www.emerald.com/insight/content/doi/10.1108/afr-11-2023-0150/full/html).
-    Agricultural Finance Review.
+- Tsiboe, F. and Turner, D. (2025). [Incorporating buy‐up price loss
+  coverage into the United States farm safety
+  net](https://onlinelibrary.wiley.com/doi/full/10.1002/aepp.13536).
+  Applied Economic Perspectives and Policy.
+- Tsiboe, F., et al. (2025). [Risk reduction impacts of crop insurance
+  in the United
+  States](https://onlinelibrary.wiley.com/doi/full/10.1002/aepp.13513#:~:text=In%20other%20words%2C%20on%20average,%2Dcrop%2Dyear%20revenue%20variability).
+  Applied Economic Perspectives and Policy.
+- Gaku, S. and Tsiboe, F. (2024). [Evaluation of alternative farm safety
+  net program combination
+  strategies](https://www.emerald.com/insight/content/doi/10.1108/afr-11-2023-0150/full/html).
+  Agricultural Finance Review.
 
 **📬 Contact** Constructive feedback is highly appreciated, and
 collaborations using this package are actively encouraged. Please reach

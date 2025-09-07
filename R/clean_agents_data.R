@@ -114,8 +114,7 @@ clean_agents_data <- function(
     agentdata[, planted_acres      := insured_acres]
     agentdata[, price_election     := 1]
     agentdata[, insured_share      := 1]
-    agentdata[, damage_area_rate   := 1]   # corrected name
-    agentdata[, dmage_are_rate     := damage_area_rate]  # backward-compatible alias
+    agentdata[, damage_area_rate   := 1]
 
     # --- 11) Save output and return informative attributes while keeping return type ---
     if (!dir.exists(output_directory)) dir.create(output_directory, recursive = TRUE)
