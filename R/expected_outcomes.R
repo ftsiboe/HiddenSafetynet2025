@@ -250,3 +250,132 @@ compute_expected_outcomes <- function(
   invisible(save_path)
 
 }
+
+#' Aggregate and winsorize expected outcomes (year-level)
+#'
+#' Loads all per-task expected outcome files for a given year, aggregates them,
+#' winsorizes key relative metrics within groups (5th-95th percentiles), and
+#' saves a single cleaned file.
+#'
+#' @param year Integer. Year to aggregate.
+#' @param expected_directory Character or NULL. Directory containing per-task
+#'   `expected_*.rds` files for the year. If NULL, uses
+#'   `file.path(study_environment$wd$dir_expected, year)`.
+#' @param output_directory Character or NULL. Directory to write the aggregated
+#'   file. If NULL, uses `study_environment$wd$dir_expected`.
+#' @param study_environment List. Must provide `$wd$dir_expected` (and is used to
+#'   resolve defaults when directories are NULL).
+#' @param agent_identifiers Character vector. Grouping keys used for by-group
+#'   winsorization (default: `c("commodity_year","state_code","county_code","type_code")`).
+#' @param disaggregate Character or NULL. Optional extra grouping column (e.g.,
+#'   `"combination"`). If provided but missing, it is created as `"ALL"`.
+#'
+#' @details
+#' Reads all `.rds` files under `expected_directory`, binds them, computes 5th and
+#' 95th percentiles for `Relmean`, `Relsd`, `Relcv`, `Rellapv`, `Rellrpv`,
+#' `Relnlapv`, `Relnlrpv`, `Relvar` within each group, caps values to that range,
+#' and writes `expected_<year>.rds` to `output_directory`.
+#'
+#' @return Invisibly returns the path to the saved file.
+#'
+#' @import data.table
+#' @export
+aggregate_expected_outcomes <- function(
+    year,
+    expected_directory = NULL,
+    output_directory = NULL,
+    study_environment,
+    agent_identifiers = c("commodity_year","state_code","county_code","type_code"),
+    disaggregate=NULL){
+
+  # base grouping keys
+  uid <- agent_identifiers
+  if (!is.null(disaggregate)) uid <- c(uid, disaggregate)
+
+  # Resolve directories from study_environment if not provided
+  if (is.null(expected_directory)) {
+    expected_directory <- file.path(study_environment$wd$dir_expected, year)
+  }
+  if (is.null(output_directory)) {
+    output_directory <- study_environment$wd$dir_expected
+  }
+
+  # Collect files
+  files <- list.files(path = expected_directory, recursive = TRUE, full.names = TRUE)
+  if (length(files) == 0L) {
+    stop("No expected outcome files found in: ", expected_directory)
+  }
+
+  # Read & stack
+  Expected <- data.table::rbindlist(
+    lapply(files, function(expected) {
+      tryCatch(readRDS(expected), error = function(e) NULL)
+    }),
+    fill = TRUE
+  )
+
+  if (is.null(Expected) || nrow(Expected) == 0L) {
+    stop("No rows loaded from expected files in: ", expected_directory)
+  }
+
+  data.table::setDT(Expected)
+
+  # Ensure disaggregate column exists if requested
+  if (!is.null(disaggregate) && !(disaggregate %in% names(Expected))) {
+    Expected[, (disaggregate) := "ALL"]
+  }
+
+  # Metrics to winsorize
+  rel_cols <- c("Relmean","Relsd","Relcv","Rellapv","Rellrpv","Relnlapv","Relnlrpv","Relvar")
+
+  # Assert metrics exist
+  missing_rel <- setdiff(rel_cols, names(Expected))
+  if (length(missing_rel)) {
+    stop("Missing required relative metric columns: ", paste(missing_rel, collapse = ", "))
+  }
+
+  # Helper for safe quantile per group/column
+  qfun <- function(x, p) {
+    vals <- unique(x[is.finite(x)])
+    if (length(vals)) stats::quantile(vals, probs = p, names = FALSE, na.rm = TRUE) else NA_real_
+  }
+
+  # Upper limits (95th) by group
+  upper_limits <- Expected[, lapply(.SD, qfun, p = 0.95),
+                           by = uid, .SDcols = rel_cols]
+  names(upper_limits) <- c(uid, paste0("upper_", rel_cols))
+
+  # Merge
+  Expected <- merge(Expected, upper_limits, by = uid, all.x = TRUE)
+
+  # Lower limits (5th) by group
+  lower_limits <- Expected[, lapply(.SD, qfun, p = 0.05),
+                           by = uid, .SDcols = rel_cols]
+  names(lower_limits) <- c(uid, paste0("lower_", rel_cols))
+
+  # Merge
+  Expected <- merge(Expected, lower_limits, by = uid, all.x = TRUE)
+
+  # Winsorize: cap to [lower, upper] using pmin/pmax with na.rm=TRUE
+  for (nm in rel_cols) {
+    ucol <- paste0("upper_", nm)
+    lcol <- paste0("lower_", nm)
+    # upper cap first
+    Expected[, (nm) := pmin(get(nm), get(ucol), na.rm = TRUE)]
+    # lower cap
+    Expected[, (nm) := pmax(get(nm), get(lcol), na.rm = TRUE)]
+  }
+
+  # Drop helper columns
+  drop_cols <- grep("^(upper|lower)_", names(Expected), value = TRUE)
+  if (length(drop_cols)) Expected[, (drop_cols) := NULL]
+
+  # Save
+  if (!dir.exists(output_directory)) dir.create(output_directory, recursive = TRUE)
+  save_path <- file.path(output_directory, paste0("expected_", year, ".rds"))
+  saveRDS(Expected, save_path)
+
+  rm(Expected); gc()
+  invisible(save_path)
+}
+

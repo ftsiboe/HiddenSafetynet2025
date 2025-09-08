@@ -1,17 +1,17 @@
 rm(list=ls(all=TRUE));gc();gc()
 library(future.apply);library(data.table)
 devtools::document()
-study_env <- setup_environment()
+study_environment <- setup_environment()
 Keep.List<-c("Keep.List",ls())
 
 # unlink(dir_sim,recursive = T)
-dir.create(study_env$wd$dir_sim)
+dir.create(study_environment$wd$dir_sim)
 lapply(
   as.numeric(gsub("[^0-9]","",list.files("data/cleaned_agents_data"))),
   function(year){
     tryCatch({
       # crop_yr <- 2015
-      if (!dir.exists(file.path(study_env$wd$dir_sim, year))) dir.create(file.path(study_env$wd$dir_sim, year), recursive = TRUE)
+      if (!dir.exists(file.path(study_environment$wd$dir_sim, year))) dir.create(file.path(study_environment$wd$dir_sim, year), recursive = TRUE)
       return(year)
     }, error = function(e){return(NULL)})
   })
@@ -20,15 +20,15 @@ function(){ #
   lapply(
     as.numeric(gsub("[^0-9]","",list.files("data/cleaned_agents_data"))),
     function(year){
-      return(print(paste0(year,"=", length(list.files(path=file.path(study_env$wd$dir_sim, year),recursive = T,full.names = T)))))
+      return(print(paste0(year,"=", length(list.files(path=file.path(study_environment$wd$dir_sim, year),recursive = T,full.names = T)))))
     })
 
   plan(multisession)
   future_lapply(
-    study_env$year_beg:study_env$year_end,
+    study_environment$year_beg:study_environment$year_end,
     function(year){
 
-      Check <- as.data.frame(file.info(list.files(path=file.path(study_env$wd$dir_sim, year),recursive = T,full.names = T)))
+      Check <- as.data.frame(file.info(list.files(path=file.path(study_environment$wd$dir_sim, year),recursive = T,full.names = T)))
 
       lapply(
         row.names(Check),
@@ -74,10 +74,10 @@ lapply(
       # work <- 1
       sim  <- work_list$draw[work]
       year <- work_list$year[work]
-      if(!paste0("sim",stringr::str_pad(sim,pad="0",3),".rds") %in% list.files(file.path(study_env$wd$dir_sim, year))){
+      if(!paste0("sim",stringr::str_pad(sim,pad="0",3),".rds") %in% list.files(file.path(study_environment$wd$dir_sim, year))){
 
         dispatcher_supplemental_simulation(
-          sim = sim,year = year,agents_dir = "data/cleaned_agents_data",
+          sim = sim,year = year,agents_directory = "data/cleaned_agents_data",
           cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds")
 
         }
