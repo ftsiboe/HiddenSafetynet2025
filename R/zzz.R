@@ -31,7 +31,10 @@
      price_risk producer_premium projected_price revenue revenue_to_count
      rma_draw_number rma_draw_price_farm rma_draw_price_pool
      rma_draw_yield_farm rma_draw_yield_pool study_env sup total_premium
-     type_code unit_structure_code weighted.mean",
+     type_code unit_structure_code weighted.mean  Revenue Revenue.cv Revenue.lapv Revenue.lrpv Revenue.mean
+    Revenue.nlapv Revenue.nlrpv Revenue.sd Revenue.var Revenue_Inc
+    Revenue_Inc.cv Revenue_Inc.lapv Revenue_Inc.lrpv Revenue_Inc.mean
+    Revenue_Inc.nlapv Revenue_Inc.nlrpv Revenue_Inc.sd Revenue_Inc.var sd",
         "\\s+"
       )[[1]]
     )

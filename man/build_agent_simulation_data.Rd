@@ -4,14 +4,18 @@
 \alias{build_agent_simulation_data}
 \title{Build agent simulation panel}
 \usage{
-build_agent_simulation_data(year, sim, agents_dir = "data/cleaned_agents_data")
+build_agent_simulation_data(
+  year,
+  sim,
+  agents_directory = "data/cleaned_agents_data"
+)
 }
 \arguments{
 \item{year}{Integer. Crop year.}
 
 \item{sim}{Integer vector. Draw number(s) to keep.}
 
-\item{agents_dir}{Character. Directory containing cleaned agent data.
+\item{agents_directory}{Character. Directory containing cleaned agent data.
 Default: \code{"data/cleaned_agents_data"}.}
 }
 \value{
@@ -31,7 +35,7 @@ yields, and add per-row revenue.
 \details{
 The function:
 \enumerate{
-\item Loads \code{cleaned_agents_data_<year>.rds} from \code{agents_dir}.
+\item Loads \code{cleaned_agents_data_<year>.rds} from \code{agents_directory}.
 \item Unnests draw pools: number, farm yield/price, and county yield/price.
 \item Filters to \code{sim} (matching \code{rma_draw_number}).
 \item Renames simulated fields to canonical names and floors negative

@@ -7,7 +7,7 @@
 dispatcher_supplemental_simulation(
   sim,
   year,
-  agents_dir = "data/cleaned_agents_data",
+  agents_directory = "data/cleaned_agents_data",
   cleaned_rma_sco_and_eco_adm_file_path = "data/cleaned_rma_sco_and_eco_adm.rds",
   output_directory = NULL
 )
@@ -17,7 +17,7 @@ dispatcher_supplemental_simulation(
 
 \item{year}{Integer. Crop year.}
 
-\item{agents_dir}{Character. Directory for cleaned agents data.}
+\item{agents_directory}{Character. Directory for cleaned agents data.}
 
 \item{cleaned_rma_sco_and_eco_adm_file_path}{Character. Path to RDS of SCO/ECO ADM
 with join keys and \code{base_rate}. Default:
@@ -55,6 +55,6 @@ The pipeline:
 }
 
 If \code{output_directory} is \code{NULL}, it defaults to
-\code{file.path(study_env$wd$dir_sim, year)} (ensure \code{study_env$wd$dir_sim}
+\code{file.path(study_environment$wd$dir_sim, year)} (ensure \code{study_environment$wd$dir_sim}
 exists in the calling environment).
 }

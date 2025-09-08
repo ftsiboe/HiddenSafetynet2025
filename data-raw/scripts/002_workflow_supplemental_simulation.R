@@ -63,14 +63,15 @@ work_list <-as.data.frame(
       }),fill = TRUE))
 
 if(!is.na(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")))){
-  work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
+  work_list$TASK <- rep(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_MIN")):as.numeric(Sys.getenv("SLURM_ARRAY_TASK_MAX")), length=nrow(work_list))
+  work_list <- work_list[work_list$TASK %in% as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
 }
 
 lapply(
   1:nrow(work_list),
   function(work){
     tryCatch({
-      # work <- 4001
+      # work <- 1
       sim  <- work_list$draw[work]
       year <- work_list$year[work]
       if(!paste0("sim",stringr::str_pad(sim,pad="0",3),".rds") %in% list.files(file.path(study_env$wd$dir_sim, year))){
@@ -79,7 +80,7 @@ lapply(
           sim = sim,year = year,agents_dir = "data/cleaned_agents_data",
           cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds")
 
-      }
+        }
       invisible()
     }, error = function(e){invisible()})
   })

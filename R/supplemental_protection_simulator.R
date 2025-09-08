@@ -7,7 +7,7 @@
 #' @details
 #' The function:
 #' \enumerate{
-#'   \item Loads \code{cleaned_agents_data_<year>.rds} from \code{agents_dir}.
+#'   \item Loads \code{cleaned_agents_data_<year>.rds} from \code{agents_directory}.
 #'   \item Unnests draw pools: number, farm yield/price, and county yield/price.
 #'   \item Filters to \code{sim} (matching \code{rma_draw_number}).
 #'   \item Renames simulated fields to canonical names and floors negative
@@ -18,7 +18,7 @@
 #'
 #' @param year Integer. Crop year.
 #' @param sim Integer vector. Draw number(s) to keep.
-#' @param agents_dir Character. Directory containing cleaned agent data.
+#' @param agents_directory Character. Directory containing cleaned agent data.
 #'   Default: \code{"data/cleaned_agents_data"}.
 #'
 #' @return A \link[data.table]{data.table} containing all original columns plus:
@@ -35,11 +35,11 @@
 build_agent_simulation_data <- function(
     year,
     sim,
-    agents_dir = "data/cleaned_agents_data"
+    agents_directory = "data/cleaned_agents_data"
 ){
 
   # Load cleaned agents data
-  agents_file <- file.path(agents_dir, sprintf("cleaned_agents_data_%s.rds", year))
+  agents_file <- file.path(agents_directory, sprintf("cleaned_agents_data_%s.rds", year))
   dt <- readRDS(agents_file)
   data.table::setDT(dt)
   # dt <- dt[commodity_code %in% 18]
@@ -642,12 +642,12 @@ compute_supplemental_incremental <- function(base_policy_data,supplemental_facto
 #' }
 #'
 #' If \code{output_directory} is \code{NULL}, it defaults to
-#' \code{file.path(study_env$wd$dir_sim, year)} (ensure \code{study_env$wd$dir_sim}
+#' \code{file.path(study_environment$wd$dir_sim, year)} (ensure \code{study_environment$wd$dir_sim}
 #' exists in the calling environment).
 #'
 #' @param sim Integer. Draw number used in data building and the filename.
 #' @param year Integer. Crop year.
-#' @param agents_dir Character. Directory for cleaned agents data.
+#' @param agents_directory Character. Directory for cleaned agents data.
 #' @param cleaned_rma_sco_and_eco_adm_file_path Character. Path to RDS of SCO/ECO ADM
 #'   with join keys and \code{base_rate}. Default:
 #'   \code{"data/cleaned_rma_sco_and_eco_adm.rds"}.
@@ -661,17 +661,17 @@ compute_supplemental_incremental <- function(base_policy_data,supplemental_facto
 dispatcher_supplemental_simulation <- function(
     sim,
     year,
-    agents_dir = "data/cleaned_agents_data",
+    agents_directory = "data/cleaned_agents_data",
     cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds",
     output_directory = NULL){
 
   if(is.null(output_directory)){
-    output_directory <- file.path(study_env$wd$dir_sim,year)
+    output_directory <- file.path(study_environment$wd$dir_sim,year)
   }
 
   #--------------------------------------------------------------
   # Build agent simulation panel                              ####
-  cleaned_agents_data <- build_agent_simulation_data(year = year,sim  = sim,agents_dir = agents_dir)
+  cleaned_agents_data <- build_agent_simulation_data(year = year,sim  = sim,agents_directory = agents_directory)
 
   #--------------------------------------------------------------
   # Compute base-policy outcomes                              ####
