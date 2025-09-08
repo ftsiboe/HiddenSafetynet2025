@@ -15,7 +15,7 @@
     coverage_level_percent damage_area_rate dmage_are_rate eco eco90
     eco95 endorsed_commodity_reporting_level_amount indemnity_amount
     insurance_plan_code insured_acres insured_share liability_amount
-    net_reporting_level_amount observed_premium_rate
+    net_reporting_level_amount observed_premium_rate study_environment task
     observed_subsidy_percent patterns planted_acres price_election
     producer_id sco subsidy_amount total_premium_amount avail_aph avail_eco90 avail_eco95 avail_sco commodity_code
     county_code county_fips plan state_code ..keep Coverage_Range ENDOS_Indemnity ENDOS_Payment_Factor
