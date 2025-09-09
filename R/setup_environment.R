@@ -99,6 +99,7 @@ setup_environment <- function(
   list(
     wd = wd,
     year_beg = year_beg,
-    year_end = year_end
+    year_end = year_end,
+    seed = seed
   )
 }

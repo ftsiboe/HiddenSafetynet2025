@@ -5,14 +5,23 @@ devtools::document()
 study_environment <- setup_environment()
 Keep.List<-c("Keep.List",ls())
 
-work_list <-as.data.frame(
-  data.table::rbindlist(
-    lapply(
-      as.numeric(list.files(study_environment$wd$dir_sim)),
-      function(year){
-        dir.create(  file.path(study_environment$wd$dir_expected, year))
-        return(data.frame(year=year,task=1:500))
-      }),fill = TRUE))
+function(){
+  work_list <-as.data.frame(
+    data.table::rbindlist(
+      lapply(
+        as.numeric(list.files(study_environment$wd$dir_sim)),
+        function(year){
+          dir.create(  file.path(study_environment$wd$dir_expected, year))
+          return(data.frame(year=year,task=1:500))
+        }),fill = TRUE))
+
+  work_list <- work_list[!file.path(study_environment$wd$dir_expected,work_list$year,paste0("expected_",work_list$year,"_",work_list$task,".rds")) %in%
+                           list.files(file.path(study_environment$wd$dir_expected),full.names = T,recursive = T),]
+
+  saveRDS(work_list,file="data-raw/work_list_compute_expected.rds")
+}
+
+work_list <- readRDS("data-raw/work_list_compute_expected.rds")
 
 if(!is.na(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")))){
   work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]

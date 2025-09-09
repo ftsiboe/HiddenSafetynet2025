@@ -341,23 +341,21 @@ aggregate_expected_outcomes <- function(
   }
 
   # Upper limits (95th) by group
-  upper_limits <- Expected[, lapply(.SD, qfun, p = 0.95),
-                           by = uid, .SDcols = rel_cols]
+  upper_limits <- Expected[, lapply(.SD, qfun, p = 0.95),by = uid, .SDcols = rel_cols]
   names(upper_limits) <- c(uid, paste0("upper_", rel_cols))
 
   # Merge
   Expected <- merge(Expected, upper_limits, by = uid, all.x = TRUE)
 
   # Lower limits (5th) by group
-  lower_limits <- Expected[, lapply(.SD, qfun, p = 0.05),
-                           by = uid, .SDcols = rel_cols]
+  lower_limits <- Expected[, lapply(.SD, qfun, p = 0.05),by = uid, .SDcols = rel_cols]
   names(lower_limits) <- c(uid, paste0("lower_", rel_cols))
 
   # Merge
   Expected <- merge(Expected, lower_limits, by = uid, all.x = TRUE)
 
   # Winsorize: cap to [lower, upper] using pmin/pmax with na.rm=TRUE
-  for (nm in rel_cols) {
+  for(nm in rel_cols) {
     ucol <- paste0("upper_", nm)
     lcol <- paste0("lower_", nm)
     # upper cap first
