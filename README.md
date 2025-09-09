@@ -50,10 +50,14 @@ insurance utilization
 
 ------------------------------------------------------------------------
 
+**simulation Workflow**
+
 Here’s how these functions relate—think of them as a single pipeline
 that builds one simulation draw, computes the base policy, layers on
 SCO/ECO endorsements in a few different ways, aggregates, and writes the
-result. dispatcher_supplemental_simulation() ├─
+result.
+
+dispatcher_supplemental_simulation() ├─
 build_agent_simulation_data(year, sim, agents_dir) │ • Loads cleaned
 agent rows for {year} │ • Unnests per-draw yields/prices; filters to the
 requested draw(s) │ • Renames to canonical fields, adds expected/final

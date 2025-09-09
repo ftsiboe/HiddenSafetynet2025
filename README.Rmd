@@ -55,10 +55,11 @@ devtools::document()
 
 ---
 
-
+**simulation Workflow**
 
 Here’s how these functions relate—think of them as a single pipeline that builds one simulation draw, 
 computes the base policy, layers on SCO/ECO endorsements in a few different ways, aggregates, and writes the result.
+
 dispatcher_supplemental_simulation()
  ├─ build_agent_simulation_data(year, sim, agents_dir)
  │    • Loads cleaned agent rows for {year}
@@ -110,24 +111,6 @@ dispatcher_supplemental_simulation()
  │    • Aggregates base outcomes alone; labels "Basic only"
  │
  └─ rbind(base-only, current, full, incremental) → saveRDS("simXXX.rds")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
