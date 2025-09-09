@@ -99,11 +99,11 @@ farm_performance_metrics <- function(
   by_id     <- c(agent_identifiers, "combination", "variable")
   keep_cols <- c(agent_identifiers, "combination", outcome_list)
   if (is.null(weight_variable)) {
-    data[, weights := 1]
+    data[, WEIGHTS := 1]
   } else {
-    data[, weights := get(weight_variable)]
-    by_id     <- c(agent_identifiers, weight_variable, "combination", "variable")
-    keep_cols <- c(agent_identifiers, weight_variable, "combination", outcome_list)
+    data[, WEIGHTS := get(weight_variable)]
+    by_id     <- c(agent_identifiers, "WEIGHTS", "combination", "variable")
+    keep_cols <- c(agent_identifiers, "WEIGHTS", "combination", outcome_list)
   }
 
   # --- derived outcomes
@@ -237,7 +237,7 @@ farm_performance_metrics <- function(
 
     # fast inner join: keep only rows present in the draw list
     setkeyv(draw_tbl, join_keys)
-    data <- data[draw_tbl, on = join_keys, nomatch = 0]
+    data <- data[draw_tbl, on = join_keys, nomatch = 0];rm(draw_tbl)
   }
 
   # ensure change columns exist for all paths
@@ -265,7 +265,7 @@ farm_performance_metrics <- function(
   ), by = lim_by][ll_nn >= 20]
 
   setkeyv(data_limits, lim_by)
-  data <- data[data_limits, nomatch = 0]
+  data <- data[data_limits, nomatch = 0];rm(data_limits)
 
   # vectorized trims with pmin/pmax to reduce passes
   data[, chgpct00T := pmin(pmax(chgpct00, -100), ul_chgpct00)]
@@ -291,9 +291,9 @@ farm_performance_metrics <- function(
       df <- copy(data)
       df[, level := get(disag_tag)]
 
-      data_avg <- df[, lapply(.SD, function(x) stats::weighted.mean(x, w = weights, na.rm = TRUE)),
+      data_avg <- df[, lapply(.SD, function(x) stats::weighted.mean(x, w = WEIGHTS, na.rm = TRUE)),
                      by = c("variable","combination","level"), .SDcols = agg_cols]
-      data_med <- df[, lapply(.SD, function(x) matrixStats::weightedMedian(x, w = weights, na.rm = TRUE)),
+      data_med <- df[, lapply(.SD, function(x) matrixStats::weightedMedian(x, w = WEIGHTS, na.rm = TRUE)),
                      by = c("variable","combination","level"), .SDcols = agg_cols]
 
       # prefix columns without constructing each name manually
@@ -310,7 +310,7 @@ farm_performance_metrics <- function(
       df[, disag := disag_tag]
       df <- df[is.finite(value) & !is.na(value),
                .(variable, combination, disag, level, aggregation, value)]
-      df
+      return(df)
     }, error = function(e) {
       NULL
     })
