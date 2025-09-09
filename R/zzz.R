@@ -34,7 +34,13 @@
      type_code unit_structure_code weighted.mean  Revenue Revenue.cv Revenue.lapv Revenue.lrpv Revenue.mean
     Revenue.nlapv Revenue.nlrpv Revenue.sd Revenue.var Revenue_Inc
     Revenue_Inc.cv Revenue_Inc.lapv Revenue_Inc.lrpv Revenue_Inc.mean
-    Revenue_Inc.nlapv Revenue_Inc.nlrpv Revenue_Inc.sd Revenue_Inc.var sd",
+    Revenue_Inc.nlapv Revenue_Inc.nlrpv Revenue_Inc.sd Revenue_Inc.var sd
+        ..keep_cols Iits Irrs1 Irrs2 Irrs3 Relcv Relmean Relnlapv Relnlrpv
+    Simlcr Simrate SimrateP Simsuby aggregation base00 base01 chglvl00
+    chglvl00T chglvl01 chglvl01T chgpct00 chgpct00T chgpct01 chgpct01T
+    combo_key disag draw_id its level ll_chglvl00 ll_chglvl01 ll_nn
+    ll_value rrs1 rrs2 rrs3 ul_chglvl00 ul_chglvl01 ul_chgpct00
+    ul_chgpct01 ul_value value valueT variable weights",
         "\\s+"
       )[[1]]
     )
