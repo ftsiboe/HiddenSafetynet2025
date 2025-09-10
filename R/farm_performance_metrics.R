@@ -50,7 +50,8 @@
 #' @import data.table
 #' @importFrom data.table melt :=
 #' @importFrom matrixStats weightedMedian
-#' @importFrom stats weighted.mean quantile
+#' @importFrom stats weighted.mean quantile na.omit
+#'
 #' @export
 farm_performance_metrics <- function(
     year,

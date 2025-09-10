@@ -17,7 +17,7 @@ University, Stillwater, OK 74078
 [![Project Status: Active – Stable and actively
 developed](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#working%20paper)
 [![R-CMD-check](https://github.com/ftsiboe/HiddenSafetynet2025/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ftsiboe/HiddenSafetynet2025/actions/workflows/R-CMD-check.yaml)
 [![codecov](https://codecov.io/gh/ftsiboe/HiddenSafetynet2025/graph/badge.svg?token=VIMHQH2SEO)](https://codecov.io/gh/ftsiboe/HiddenSafetynet2025)
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)

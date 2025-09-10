@@ -34,6 +34,7 @@ run_workflow_simulation.sbatch
 run_workflow_compute_expected.sbatch
 run_workflow_aggregate_expected.sbatch
 run_workflow_compute_farm_performance_metrics.sbatch
+run_workflow_aggregate_metrics.sbatch
 \\.out$
 ^.*\\.pdf$
 ^HiddenSafetynet2025_.*\.pdf$

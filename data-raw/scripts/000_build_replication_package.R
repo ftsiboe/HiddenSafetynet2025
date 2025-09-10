@@ -8,7 +8,7 @@ unlink(c(
   list.files("./man",  full.names = TRUE)
 ))
 
-for(i in c("setup_environment","clean_rma_sobtpu","clean_supplemental_plan_shares","ers_theme","plot_helpers")){
+for(i in c("setup_environment","clean_rma_sobtpu","clean_supplemental_plan_shares","ers_theme")){
   download.file(
     paste0("https://raw.githubusercontent.com/ftsiboe/USFarmSafetyNetLab/refs/heads/main/R/",i,".R"),
     paste0("./R/",i,".R"), mode = "wb", quiet = TRUE)

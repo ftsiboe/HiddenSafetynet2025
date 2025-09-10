@@ -40,7 +40,9 @@
     chglvl00T chglvl01 chglvl01T chgpct00 chgpct00T chgpct01 chgpct01T
     combo_key disag draw_id its level ll_chglvl00 ll_chglvl01 ll_nn
     ll_value rrs1 rrs2 rrs3 ul_chglvl00 ul_chglvl01 ul_chgpct00
-    ul_chgpct01 ul_value value valueT variable weights",
+    ul_chgpct01 ul_value value valueT variable weights WEIGHTS area_km2 centroid coverage_type_code cx cy endorsed_acres
+    geometry is_small label na.omit reporting_level_type state_abbv
+    value_cat",
         "\\s+"
       )[[1]]
     )
