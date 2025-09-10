@@ -12,6 +12,8 @@ study_environment <- setup_environment(
   local_directories = list(
     file.path("data-raw", "output","aggregate_metrics"),
     file.path("data-raw", "output","summary"),
+    file.path("data-raw", "output","figure_data"),
+    file.path("data-raw", "output","figure"),
     file.path("data-raw", "scripts"),
     file.path("data", "cleaned_agents_data")
   ),
