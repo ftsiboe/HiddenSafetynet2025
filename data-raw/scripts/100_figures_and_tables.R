@@ -376,11 +376,11 @@ data$commodity_name <- ifelse(data$commodity_name %in% "Flue Cured Tobacco","Tob
 saveRDS(data,paste0("data-raw/output/figure_data/crop_availability.rds"))
 
 function(){
-  wb <- openxlsx::loadWorkbook(paste0("output/supplemental_protection_RESULTS.xlsx"))
+  wb <- openxlsx::loadWorkbook(paste0("data-raw/output/supplemental_protection_RESULTS.xlsx"))
   openxlsx::writeData(wb, sheet = "crop_avail",
                       readRDS(paste0("data-raw/output/figure_data/crop_availability.rds"))[c("commodity_code","commodity_name","insured_acres","avail_aph","avail_sco","avail_eco","sco_use","eco_use")]
                       , colNames = T)
-  openxlsx::saveWorkbook(wb,paste0("output/supplemental_protection_RESULTS.xlsx"),overwrite = T)
+  openxlsx::saveWorkbook(wb,paste0("data-raw/output/supplemental_protection_RESULTS.xlsx"),overwrite = T)
 }
 
 #--------------------------------------------------------------------------------------------------------------
@@ -520,7 +520,7 @@ expected <- as.data.frame(
     lapply(
       c(2015:study_environment$year_end),
       function(commodity_year){
-        expected <- readRDS(paste0(study_environment$wd$dir_expected,"/expected_",commodity_year,".rds"))
+        expected <- readRDS(paste0("data-raw/expected/expected_",commodity_year,".rds"))
         expected <- unique(as.data.frame(expected)[c("commodity_year","state_code","county_code","commodity_code","type_code","practice_code",
                                       "unit_structure_code","insurance_plan_code","coverage_level_percent")])
         return(expected)}), fill = TRUE));gc()
@@ -651,14 +651,14 @@ saveRDS(data,file="data-raw/output/figure_data/agent_summary.rds")
 function(){
 
   sob_book <- readRDS("data-raw/output/figure_data/book_of_business.rds")
-  wb <- openxlsx::loadWorkbook("output/supplemental_protection_RESULTS.xlsx")
+  wb <- openxlsx::loadWorkbook("data-raw/output/supplemental_protection_RESULTS.xlsx")
   openxlsx::writeData(wb, sheet = "book_of_business",sob_book[c("commodity_code" ,"Variable","mean","sd")] , colNames = T)
-  openxlsx::saveWorkbook(wb,"output/supplemental_protection_RESULTS.xlsx",overwrite = T)
+  openxlsx::saveWorkbook(wb,"data-raw/output/supplemental_protection_RESULTS.xlsx",overwrite = T)
 
   data <- readRDS("data-raw/output/figure_data/agent_summary.rds")
-  wb <- openxlsx::loadWorkbook("output/supplemental_protection_RESULTS.xlsx")
+  wb <- openxlsx::loadWorkbook("data-raw/output/supplemental_protection_RESULTS.xlsx")
   openxlsx::writeData(wb, sheet = "agent_summary",data[c("commodity_code","Variable","mean","sd")] , colNames = T)
-  openxlsx::saveWorkbook(wb,"output/supplemental_protection_RESULTS.xlsx",overwrite = T)
+  openxlsx::saveWorkbook(wb,"data-raw/output/supplemental_protection_RESULTS.xlsx",overwrite = T)
 }
 
 #--------------------------------------------------------------------------------------------------------------
@@ -667,16 +667,16 @@ rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 function(){
   data <- readRDS("data-raw/output/summary/impact_main.rds")
   data <- data[data$aggregation %in% c("avg_valueT","avg_chglvl00T","avg_chgpct00T"),]
-  data <- data[data$combination %in% c("Basic+CURRENT","Basic only","Basic+SCO8665","Basic++ECO9044",
-                                       "Basic++ECO9544","Basic+SCO8665+ECO9044","Basic+SCO8665+ECO9544"),]
+  data <- data[data$combination %in% c("Basic+CURRENT","Basic only","Basic+SCO8665","Basic+ECO9044",
+                                       "Basic+ECO9544","Basic+SCO8665+ECO9044","Basic+SCO8665+ECO9544"),]
 
   table(data$aggregation)
 
   data <- data[data$baseline %in% c("2021-2023","2015-2023"),
                c("aggregation","baseline","combination","variable","est","est_se","est_pv")]
-  wb <- openxlsx::loadWorkbook(paste0("Output/supplemental_protection_RESULTS.xlsx"))
+  wb <- openxlsx::loadWorkbook(paste0("data-raw/output/supplemental_protection_RESULTS.xlsx"))
   openxlsx::writeData(wb, sheet = "impact_main",data , colNames = T)
-  openxlsx::saveWorkbook(wb,paste0("Output/supplemental_protection_RESULTS.xlsx"),overwrite = T)
+  openxlsx::saveWorkbook(wb,paste0("data-raw/output/supplemental_protection_RESULTS.xlsx"),overwrite = T)
 }
 #--------------------------------------------------------------------------------------------------------------
 # Figure : main impacts                                                                                     ####

@@ -1,0 +1,188 @@
+---
+title: "Hidden Safety Net of Underutilized Supplemental Insurance in US Agriculture "
+date: "`r format(Sys.time(), '%B %d %Y ')`"
+output:
+  word_document: null
+  html_document:
+    df_print: paged
+---
+
+<!-- preliminaries -->
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,fig.height=7, fig.width=8.5, warning = F, message = F)
+rm(list=ls(all=TRUE));library('magrittr');library('dplyr');library('tidyverse');library(data.table)
+source("000_Missed_supplemental_protection_FUN.R")
+#mainCrops <- unique(readRDS("Output/drawlist.rds")[[1]]$crop_cd)
+Keep.List<-c("Keep.List",ls())
+``` 
+
+**5.1 Establishing the baseline**
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+data <- readRDS("Output/FigData/impact_main.rds")
+data <- data[data$baseline %in% c("2021-2023","2015-2023"),c("aggregation","baseline","combination","variable","est","est_se","est_pv")]
+data <- data[data$baseline %in% c("2015-2023"),]
+data <- data[data$combination %in% c("Basic+CURENT"),]
+data <- data[data$aggregation %in% c("avg_valueT","value"),]
+row.names(data) <- data$variable
+data$est <- round(data$est,2)
+``` 
+
+Table 3 presents a compelling view into the effectiveness of integrating basic crop insurance policies (APH, YP, RP, and RP-HPE) with supplemental protection (SCO and ECO) over the period from 2015 to 2023. The data reveals a significant boost in revenue transfer potential under baseline conditions, with the observed stacking rate generating approximately `r data["itp","est"]`% more revenue than scenarios lacking any crop insurance. This increase primarily originates from the subsidized portions of insurance premiums and indemnity payments that cover losses. Moreover, the baseline highlights a substantial reduction in revenue variability. Specifically, the overall risk associated with revenue fluctuations decreased by nearly `r data["rrp1","est"]`% when compared to instances without insurance coverage. The baseline scenario shows a remarkable decrease in both relative and absolute downside risks by `r data["rrp2","est"]`% and `r data["rrp3","est"]`%, respectively. The cost for this level of security? An actuarially fair premium rate of just `r data["Simrate","est"]` cents per dollar of liability, `r data["Simsuby","est"]`% of which is subsidized by the federal government, leaving farmers to pay merely `r data["SimrateP","est"]` cents out of pocket. 
+
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+
+LAB <- readRDS("Output/crop_availability.rds")
+LAB <- doBy::summaryBy(comm_amt_sob~Commodity.Name+crop_cd,FUN=c(sum,length),data=LAB)
+LAB <- LAB[order(-LAB$comm_amt_sob.length,-LAB$comm_amt_sob.sum),]
+
+CROP <- readRDS("Output/FigData/impact_heterogeneity.rds")
+CROP$crop_cd <- as.numeric(as.character(CROP$level))
+CROP <- CROP[CROP$disag %in% c("CROP","FCIP"),]
+CROP <- CROP[CROP$baseline %in% c("2015-2023"),]
+CROP <- CROP[CROP$combination %in% c("Basic+CURENT"),]
+CROP <- CROP[!CROP$crop_cd %in% 0,]
+CROP <- CROP[CROP$variable %in% c("rrp2"),]
+CROP <- dplyr::inner_join(LAB[LAB$crop_cd %in% unique(CROP$crop_cd),],CROP[c("crop_cd","variable","est")])
+CROP$est <- round(CROP$est,2)
+CROP <- CROP[order(-CROP$est),]
+CROP$crop <- tolower(CROP$Commodity.Name)
+CROP$txt <- paste0(CROP$crop," (",round(CROP$est,2),"%)")
+CROP$txt[nrow(CROP)] <- paste0("and ",CROP$txt[nrow(CROP)])
+
+data <- readRDS("Output/FigData/state_major_crop.rds")
+data$state_fips <- data$state_cd
+data <- dplyr::inner_join(readRDS("Output/FigData/basline_spatial_rrp2.rds"),data)
+data$crop_cd <- data$major_crop_cd
+data <- dplyr::inner_join(unique(readRDS("Output/crop_availability.rds")[c("crop_cd","Commodity.Name")]),data)
+
+
+toplist <- data[grepl("All listed crops",data$crop),]
+toplist <- toplist[order(-toplist$est),]
+toplist <- toplist[1:5,]
+topest <- round(min(toplist$est,na.rm=T))
+toplist$state_name <- paste0(toplist$state_name," (",tolower(toplist$Commodity.Name),")")
+toplist$state_est <- round(toplist$est,2)
+toplist[nrow(toplist),"state_name"] <- paste0("and ",toplist[nrow(toplist),"state_name"])
+toplist[nrow(toplist),"state_est"] <- paste0("and ",toplist[nrow(toplist),"state_est"])
+
+lowlist <- data[grepl("All listed crops",data$crop),]
+lowlist <- lowlist[order(lowlist$est),]
+lowlist <- lowlist[1:5,]
+lowest <- round(max(lowlist$est,na.rm=T))
+lowlist$state_name <- paste0(lowlist$state_name," (",tolower(lowlist$Commodity.Name),")")
+lowlist$state_est <- round(lowlist$est,2)
+lowlist[nrow(lowlist),"state_name"] <- paste0("and ",lowlist[nrow(lowlist),"state_name"])
+lowlist[nrow(lowlist),"state_est"] <- paste0("and ",lowlist[nrow(lowlist),"state_est"])
+
+``` 
+
+Figure S1 further enriches our understanding by pinpointing `r CROP$crop[1]` as the crop with the highest downside revenue risk reduction rate at `r CROP$est[1]`%, closely followed by `r paste0(CROP$txt[2:nrow(CROP)],collapse = ", ")`. The geographical distribution of these crops along downside risk reduction potential also in Figure S1, showcases states (major crop in that state) like `r paste0(toplist$state_name,collapse = ", ")` as leaders in downside revenue risk reduction, with rates exceeding `r topest`%. Conversely, states such as `r paste0(lowlist$state_name,collapse = ", ")` are identified as having the lowest risk reduction rates, ranging less than `r lowest`%. Comparing Figure S1 to S2 and S3 indicates that the programs which offer high downside revenue risk reduction also tend to involve higher revenue transfers and greater out-of-pocket costs for producers. 
+
+**3. 5.2 Effects of Increasing Participation in Supplemental Protection**
+
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+data <- readRDS("Output/FigData/impact_main.rds")
+data <- data[data$baseline %in% c("2021-2023","2015-2023"),c("aggregation","baseline","combination","variable","est","est_se","est_pv")]
+data <- data[data$baseline %in% c("2015-2023"),]
+# data <- data[data$combination %in% c("Basic+CURENT"),]
+data <- data[data$aggregation %in% c("avg_chgpct00T","chgpct"),]
+data$est <- round(data$est,2)
+data$combination <- ifelse(data$combination %in% "Basic++ECO9044","Basic+ECO9044",data$combination)
+data$combination <- ifelse(data$combination %in% "Basic++ECO9544","Basic+ECO9544",data$combination)
+data$combination <- gsub("SCO8665","SCO",data$combination)
+data$combination <- gsub("ECO9044","ECO90",data$combination)
+data$combination <- gsub("ECO9544","ECO95",data$combination)
+row.names(data) <- paste0(data$variable,"-",data$combination)
+# `r data["itp-Basic++ECO9544","est"]`
+# `r data["rrp2-Basic++ECO9544","est"]`[`r data["rrp3-Basic++ECO9544","est"]`]
+``` 
+
+Compared to the existing 2015 to 2023 benchmark, the basic policy alone has a negligible effect on risk mitigation and revenue transfer. Specifically, the policy’s capability to reduce relative [absolute] downside risk is marginally diminished by approximately `r abs(data["rrp2-Basic only","est"])` [`r abs(data["rrp3-Basic only","est"])`] percent from the baseline, while the potential for revenue transfer is reduced by `r abs(data["itp-Basic only","est"])` percent. These findings suggest that merely purchasing a basic policy without fully stacking with a supplemental plan fails to exploit the full benefits of risk reduction and income transfer available to producers during this period. Fully integrating the SCO with the basic policy substantially boosts revenue metrics, with relative [absolute] downside risk reduction and revenue transfer improving by `r data["rrp2-Basic+SCO","est"]` [`r data["rrp3-Basic+SCO","est"]`] and `r data["itp-Basic+SCO","est"]` percent, respectively, compared to baseline levels. Moreover, the addition of ECO at a 95% coverage level significantly amplifies improvements across all evaluated metrics. The combination of Basic + ECO95 enhances both relative and absolute measures of downside risk reduction by `r data["rrp2-Basic+ECO95","est"]` and `r data["rrp3-Basic+ECO95","est"]` percent, respectively, and increases revenue transfer by `r data["itp-Basic+ECO95","est"]` percent above the baseline. The most comprehensive benefits are observed when SCO and ECO95 are synergistically stacked with basic policies, delivering the highest increments in downside risk reduction (`r data["rrp2-Basic+SCO+ECO95","est"]` and `r data["rrp3-Basic+SCO+ECO95","est"]` percent), overall risk alleviation (`r data["rrp1-Basic+SCO+ECO95","est"]` percent), and revenue transfer (`r data["itp-Basic+SCO+ECO95","est"]` percent). These results underscore that multi-layered insurance options offer the most effective safeguard against a wide array of agricultural risks, providing substantial protective measures that exceed those of standalone policies.
+
+```{r, include = F}
+prim <- data[data$variable %in% c("Simrate","SimrateP","Simsuby"),c("aggregation","combination","variable","est")] %>% tidyr::spread(variable, est) 
+prim <- prim[!prim$combination %in% c("Basic+SCO+ECO9080","Basic+SCO+ECO9580"),]
+prim <- prim[order(-prim$SimrateP),]
+prim$combination <- gsub("[+]"," + ",prim$combination)
+row.names(prim) <- prim$combination
+
+prim$txt <- paste0(prim$combination," (",prim$SimrateP,"%)")
+prim[nrow(prim),"txt"] <- paste0("and ",prim[nrow(prim),"txt"])
+
+#                         aggregation           combination Simrate SimrateP Simsuby
+# Basic + ECO95         avg_chglvl00T         Basic + ECO95    4.13     2.61   -7.21
+# Basic + SCO + ECO95   avg_chglvl00T   Basic + SCO + ECO95    3.89     1.73   -2.19
+# Basic + SCO + ECO9580 avg_chglvl00T Basic + SCO + ECO9580    6.07     1.40    4.35
+# Basic + SCO + ECO90   avg_chglvl00T   Basic + SCO + ECO90    3.15     1.26   -1.23
+# Basic + SCO + ECO9080 avg_chglvl00T Basic + SCO + ECO9080    3.84     1.03    2.16
+# Basic + ECO90         avg_chglvl00T         Basic + ECO90    1.52     1.01   -3.82
+# Basic + SCO           avg_chglvl00T           Basic + SCO    2.64     0.94   -0.28
+# Basic only            avg_chglvl00T            Basic only   -0.15    -0.07    0.19
+``` 
+
+While enhanced participation in SCO and ECO is correlated with improvements in risk reduction and revenue transfer, it also leads to higher aggregate actuarially fair premium rates and reduced aggregate subsidy rates, resulting in increased aggregate premium paid rates. Notably, the combination `r prim[1,"combination"]` exhibits the highest increase in the premium rate faced by producers, at `r prim[1,"SimrateP"]`%, stemming from a `r prim[1,"Simrate"]`% increase in the actuarially fair premium rate and a `r abs(prim[1,"Simsuby"])`% reduction in the subsidy rate. In terms of the premium rate paid, Basic + ECO95 is followed by `r paste0(prim$txt[2:nrow(prim)],collapse = ", ")`.
+
+**Crop Heterogeneous**
+```{r, include = F}
+data <- readRDS("Output/FigData/impact_heterogeneity.rds")
+data <- data[data$aggregation %in% c("avg_chgpct00T"),]
+data <- data[data$disag %in% c("CROP"),]
+data <- data[data$baseline %in% c("2015-2023"),]
+data <- data[data$combination %in% c("Basic+SCO8665+ECO9544"),]
+data$est <- round(data$est,2)
+data <- data[data$variable %in% c("rrm2","rrp2","SimrateP"),c("variable","level","est")] %>% 
+  tidyr::spread(variable, est)
+data$grp <- as.numeric(cut(data$rrm2,c(-Inf,quantile(data$rrm2,c(0.33,0.66,0.99))[1:2],Inf)))
+data$crop_cd <- as.numeric(as.character(data$level))
+data <- dplyr::inner_join(unique(readRDS("Output/crop_availability.rds")[c("crop_cd","Commodity.Name")]),data)
+data <- data[order(-data$rrm2),]
+
+
+g3 <- tolower(data$Commodity.Name[data$grp %in% 3])
+g3[length(g3)] <- paste0("and ",g3[length(g3)])
+g3 <- paste0(g3,collapse = ", ")
+g3_rrm2 <- data$rrm2[data$grp %in% 3]
+g3_rrp2 <- data$rrp2[data$grp %in% 3]
+g3_rate <- data$SimrateP[data$grp %in% 3]
+
+g3_rrm2L <- g3_rrm2
+g3_rrm2L[length(g3_rrm2L)] <- paste0("and ",g3_rrm2L[length(g3_rrm2L)])
+g3_rrm2L <- paste0(g3_rrm2L,collapse = ", ")
+
+g2 <- tolower(data$Commodity.Name[data$grp %in% 2])
+g2[length(g2)] <- paste0("and ",g2[length(g2)])
+g2 <- paste0(g2,collapse = ", ")
+g2_rrm2 <- data$rrm2[data$grp %in% 2]
+g2_rrp2 <- data$rrp2[data$grp %in% 2]
+g2_rate <- data$SimrateP[data$grp %in% 2]
+
+g1 <- tolower(data$Commodity.Name[data$grp %in% 1])
+g1[length(g1)] <- paste0("and ",g1[length(g1)])
+g1 <- paste0(g1,collapse = ", ")
+g1_rrm2 <- data$rrm2[data$grp %in% 1]
+g1_rrp2 <- data$rrp2[data$grp %in% 1]
+g1_rate <- data$SimrateP[data$grp %in% 1]
+
+``` 
+
+
+When it comes to balancing risk reduction and cost, not all crops are created equal. As shown in Figure 4 (Panel Crop), three distinct categories emerge. First, `r g3`  deliver substantial downside risk reduction—ranging from `r min(g3_rrp2,na.rm=T)` to `r max(g3_rate,na.rm=T)` percent improvement over the baseline—at marginal costs of `r min(g3_rate,na.rm=T)` to `r max(g3_rate,na.rm=T)` percent above baseline. For these crops, the ratio of downside revenue risk reduction to increased out-of-pocket cost (i.e., elasticity) stands at `r g3_rrm2L`, respectively. These relatively high elasticities make stacking a basic insurance policy with a supplemental plan particularly appealing for producers of rice, barley, popcorn, peanuts, and soybeans.
+
+The next group consisting of `r g2` also show considerable improvements in downside risk reduction (above `r min(g2_rrp2,na.rm=T)` percent) but require additional premiums ranging from `r min(g2_rate,na.rm=T)` to `r max(g2_rate,na.rm=T)` percent above the baseline. Although these crops still benefit significantly from fully stacking basic insurance with a supplemental plan, the higher premium costs make this option relatively pricier compared to the first group. The final group consisting of `r g1` provide only modest risk reduction (below `r max(g1_rrp2,na.rm=T)` percent of the baseline), with marginal costs spanning `r min(g1_rate,na.rm=T)` to `r max(g1_rate,na.rm=T)` percent above baseline. This lower level of protection, combined with relatively high additional costs, makes stacking policies less appealing for producers seeking strong coverage without substantially increasing their expenses.
+
+Overall, these distinct groupings underscore the importance of aligning each producer’s cost tolerance with the potential downside risk reduction benefits of pairing a basic insurance policy with a supplemental plan. By understanding how each crop responds to premium increases, producers can make more informed decisions about the optimal level of coverage for their operations.
+
+
+
+
+
+
+
+
+
+
+
+

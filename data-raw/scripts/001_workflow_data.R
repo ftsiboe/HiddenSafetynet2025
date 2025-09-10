@@ -7,7 +7,7 @@ library(data.table); library(rfcip)
 # Initialize study environment
 devtools::document()
 study_environment <- setup_environment(
-  year_beg = 2015, year_end = 2024, seed = 1980632,
+  year_beg = 2015, year_end = 2023, seed = 1980632,
   project_name="HiddenSafetynet2025",
   local_directories = list(
     file.path("data-raw", "output","aggregate_metrics"),
@@ -31,7 +31,7 @@ Keep.List<-c("Keep.List",ls())
 # Clean and enrich RMA Summary of Business (SOB) data
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 sob <- clean_rma_sobtpu(
-  years = 2015:2024,
+  years = study_environment$year_beg:study_environment$year_end,
   insurance_plan = c(1:3, 31:33, 35:36, 87:89, 90),
   acres_only = TRUE,
   addon_only = TRUE,
@@ -41,7 +41,6 @@ sob <- clean_rma_sobtpu(
 
 sob <- clean_supplemental_plan_shares(sob)
 saveRDS(sob,file ="data/cleaned_rma_sobtpu.rds")
-
 
 # Build SCO/ECO/Area ADM table (adds SCO88/SCO90)
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()

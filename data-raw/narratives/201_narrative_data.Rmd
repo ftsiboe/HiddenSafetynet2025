@@ -1,0 +1,217 @@
+---
+title: "Hidden Safety Net of Underutilized Supplemental Insurance in US Agriculture "
+date: "`r format(Sys.time(), '%B %d %Y ')`"
+output:
+  word_document: null
+  html_document:
+    df_print: paged
+---
+
+<!-- preliminaries -->
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,fig.height=7, fig.width=8.5, warning = F, message = F)
+rm(list=ls(all=TRUE));library('magrittr');library('dplyr');library('tidyverse');library(data.table)
+source("000_Missed_supplemental_protection_FUN.R")
+mainCrops <- unique(readRDS("Output/drawlist.rds")[[1]]$crop_cd)
+Keep.List<-c("Keep.List",ls())
+``` 
+
+**Book of business**
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+tab01a <- readRDS("Output/FigData/book_of_business.rds")
+tab01b <- readRDS("Output/FigData/agent_summary.rds")
+county_crops <- readRDS("Output/county_crops.rds")
+
+net_acre_qty <- round(tab01a[(tab01a$Variable %in% "net_acre_qty" & tab01a$crop_cd %in% "All"),"mean"],2)
+liability_amt <- round(tab01a[(tab01a$Variable %in% "liability_amt" & tab01a$crop_cd %in% "All"),"mean"],2)
+total_prem <- round(tab01a[(tab01a$Variable %in% "total_prem" & tab01a$crop_cd %in% "All"),"mean"],2)
+indem_amt <- round(tab01a[(tab01a$Variable %in% "indem_amt" & tab01a$crop_cd %in% "All"),"mean"],2)
+liab_rep <- round(tab01a[(tab01a$Variable %in% "liab_rep" & tab01a$crop_cd %in% "All"),"mean"],2)
+lr_cum <- round(tab01a[(tab01a$Variable %in% "lr_cum" & tab01a$crop_cd %in% "All"),"mean"],2)
+
+tab01a$mean <- round(tab01a$mean,2)
+tabcrp <- tab01a[tab01a$Variable %in% c("net_acre_qty","liability_amt","lr_cum","liab_rep"),c("crop_cd","Variable","mean")] 
+tabcrp <- tidyr::spread(tabcrp,Variable, mean)
+tabcrp <- tabcrp[!tabcrp$crop_cd %in% "All",]
+tabcrp <- tabcrp[order(-tabcrp$net_acre_qty),]
+tabcrp <- tabcrp[1:6,]
+tabcrp$text01 <- paste0(tabcrp$net_acre_qty," million acres ($",tabcrp$liability_amt," billion)")
+tabcrp$crop_cd[nrow(tabcrp)] <- paste0("and ",tabcrp$crop_cd[nrow(tabcrp)])
+tabcrp$text01[nrow(tabcrp)] <- paste0("and ",tabcrp$text01[nrow(tabcrp)])
+
+crop6_list <- tolower(paste0(tabcrp$crop_cd,collapse = ", "))
+crop6_liab <- tolower(paste0(tabcrp$text01,collapse = ", "))
+
+tabcrp <- tabcrp[order(tabcrp$lr_cum),]
+lr_cum_lo <- tabcrp[1,"lr_cum"]
+lr_cum_hi <- tabcrp[nrow(tabcrp),"lr_cum"]
+lr_cum_lo_crop <- tolower(tabcrp[1,"crop_cd"])
+lr_cum_hi_crop <- tolower(tabcrp[nrow(tabcrp),"crop_cd"])
+
+tabcrp <- tabcrp[order(-tabcrp$liab_rep),]
+tabcrp$text02 <- paste0(tabcrp$crop_cd," at ",tabcrp$liab_rep,"%")
+tabcrp$text02[nrow(tabcrp)] <- paste0("and ",tabcrp$text02[nrow(tabcrp)])
+
+liab_rep_hi <- tabcrp[1,"lr_cum"]
+liab_rep_crop <- tolower(tabcrp[nrow(tabcrp),"crop_cd"])
+crop6_liab_rep <- tolower(paste0(tabcrp$text02[2:nrow(tabcrp)],collapse = ", "))
+
+n_crops <- length(unique(county_crops$Commodity.Name))
+n_counties <- nrow(unique(county_crops[c("state_cd", "county_cd")]))
+n_progs <- nrow(unique(county_crops[c("state_cd", "county_cd","Commodity.Name")])) 
+
+all_crops <- tolower(unique(county_crops$Commodity.Name))
+all_crops <- all_crops[order(all_crops)]
+all_crops[length(all_crops)] <- paste0("and ",all_crops[length(all_crops)])
+all_crops <- paste0(all_crops,collapse = ", ")
+``` 
+
+Our study focuses on data from 2015-23 for `r n_crops` crops across `r n_counties` counties, encompassing `r n_progs` crop/county programs where SCO and ECO offerings were available.^[The crops included `r all_crops`.] Table 1 presents the descriptive statistics of our dataset. During this period, the annual net insured area averaged `r net_acre_qty` million acres with a total liability of $`r liability_amt` billion, and the program collected premiums totaling $`r total_prem` billion annually. Additionally, it paid out $`r indem_amt` billion in indemnities to producers each year. `r crop6_list` comprised most of this business, accounting respectively for `r crop6_liab` of the total annual net insured area and liability. These crops also led in all other metrics listed in Table 1. The cumulative loss ratio across all crops was `r lr_cum` but varied among the six major crops, ranging from `r lr_cum_lo` for `r lr_cum_lo_crop` to `r lr_cum_hi` for `r lr_cum_hi_crop`. The sample represents `r liab_rep`% of the total non-livestock liability within the FCIP from 2015-23. Notably, the sample representation was exceptionally high for the six major crops; `r liab_rep_hi`% for `r liab_rep_crop`, followed by `r crop6_liab_rep`. See Table S1 in the online appendix for the book of business summary of other crops not shown on Table 1.
+
+**3. Supplemental Coverage Offering and Participation**
+
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+data <- readRDS("Data/supplemental_offering_adoption.rds")
+
+
+avail_aph_sb <- sum(as.numeric(data$crop_cd %in% 39 & data$crop_yr %in% 2024 & data$avail_aph %in% 1),na.rm=T)
+avail_sco_sb <- sum(as.numeric(data$crop_cd %in% 39 & data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_sco %in% 1),na.rm=T)
+avail_eco_sb <- sum(as.numeric(data$crop_cd %in% 39 & data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_eco90 + data$avail_eco95 >0 ),na.rm=T)
+
+
+
+
+
+
+
+
+avail_aph <- sum(as.numeric(data$crop_yr %in% 2024 & data$avail_aph %in% 1),na.rm=T)
+avail_sco <- sum(as.numeric(data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_sco %in% 1),na.rm=T)
+avail_eco <- sum(as.numeric(data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_eco90 + data$avail_eco95 >0 ),na.rm=T)
+
+crop_aph <- length(unique(data[(data$crop_yr %in% 2024 & data$avail_aph %in% 1),"crop_cd"]))
+crop_sco <- length(unique(data[(data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_sco %in% 1),"crop_cd"]))
+crop_eco <- length(unique(data[(data$crop_yr %in% 2024 & data$avail_aph %in% 1 & data$avail_eco90 + data$avail_eco95 >0),"crop_cd"]))
+
+setDT(data)
+crop_avail <- as.data.frame(
+  data[crop_yr %in% 2015:endyear & crop_cd %in% mainCrops,.(
+    avail_aph = sum(avail_aph,na.rm=T),
+    avail_sco = sum(avail_sco,na.rm=T),
+    avail_eco = sum(as.numeric(avail_eco90 + avail_eco95 > 0),na.rm=T),
+    avail_ecosco = sum(as.numeric(avail_sco + avail_eco90 + avail_eco95 > 0),na.rm=T)), 
+    by = c("crop_cd")])
+
+crop_avail$avail_sco <- round((crop_avail$avail_sco/crop_avail$avail_aph)*100)
+crop_avail$avail_eco <- round((crop_avail$avail_eco/crop_avail$avail_aph)*100)
+crop_avail$avail_ecosco <- round((crop_avail$avail_ecosco/crop_avail$avail_aph)*100)
+
+crop_avail <- crop_avail[order(-crop_avail$avail_ecosco),]
+``` 
+
+
+Figure 2 illustrates that since their introduction, the SCO and ECO are available for purchase across nearly all eligible commodity/county programs. Eligibility for SCO and ECO is determined by whether the commodity/county program offers an individual-based basic insurance policy – i.e., APH, YP, RP, or RP-HPE. As of `r endyear`, out of `r as.character(avail_aph)` eligible county crop programs, `r as.character(avail_sco)` (`r round((avail_sco/avail_aph)*100,2)`%) offered SCO and `r as.character(avail_eco)` (`r round((avail_eco/avail_aph)*100,2)`%) offered ECO. Specifically for the `r crop_aph` commodities eligible  in `r endyear`, `r crop_sco` (`r round((crop_sco/crop_aph)*100,2)`%) provided SCO, while only `r crop_eco` (`r round((crop_eco/crop_aph)*100,2)`%) had ECO available. Despite the availability of individual-based basic policies in Hawaii and some areas of Alaska, neither SCO nor ECO are available to producers in these states as of `r endyear`. However, both options have been consistently accessible from 2015 to `r endyear` in all eligible counties for cotton, `r crop_avail[crop_avail$crop_cd %in% 41,"avail_ecosco"]`% for corn and soybeans, `r crop_avail[crop_avail$crop_cd %in% 11,"avail_ecosco"]`% for wheat, and `r crop_avail[crop_avail$crop_cd %in% 18,"avail_ecosco"]`% for rice (see Figure 3).
+
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+tab01a <- readRDS("Output/FigData/book_of_business.rds")
+fig3 <- readRDS("Output/FigData/supplemental_coverage_temp.rds")
+fig3$plan <- ifelse(grepl("SCO",as.character(fig3$plan)),"SCO","ECO")
+
+net_acre_qty <- round(tab01a[(tab01a$Variable %in% "net_acre_qty" & tab01a$crop_cd %in% "All"),"mean"],2)
+edr_acre_qty <- round(tab01a[(tab01a$Variable %in% "edr_acre_qty" & tab01a$crop_cd %in% "All"),"mean"],2)
+county_crops <- readRDS("Output/county_crops.rds")
+
+setDT(fig3)
+fig3 <- rbind(fig3[plan %in% "SCO" & crop_yr %in% c(2015,endyear)],
+                 fig3[plan %in% "ECO" & crop_yr %in% c(2021,endyear)]) %>% 
+  group_by(cropname) %>% mutate(crop_yr_beg = min(crop_yr,na.rm=T)) %>% as.data.frame(.)
+setDT(fig3)
+fig3 <- as.data.frame(
+  fig3[type %in% "Adoption as a percentage of eligible insured acres",.(
+    value = round(mean(value,na.rm=T),2)), 
+    by = c("cropname","crop_cd","plan","crop_yr")])
+fig3$crop_yr <- ifelse(fig3$crop_yr %in% endyear,"v1","v0")
+fig3 <- tidyr::spread(fig3,crop_yr, value)
+fig3$x <- round(fig3$v1-fig3$v0,2)
+fig3
+
+sixcrp <- fig3[fig3$cropname %in% c("Rice","Wheat","Corn","Soybeans","Cotton","Sorghum"),c("cropname","plan","v1")]
+sixcrp <- tidyr::spread(sixcrp,plan, v1)
+sixcrp$name <- tolower(sixcrp$cropname)
+sixcrp$rate <- paste0(sixcrp$SCO,"% [",sixcrp$ECO,"%]")
+sixcrp$rate[nrow(sixcrp)] <- paste0("and ",sixcrp$rate[nrow(sixcrp)])
+sixcrp$name[nrow(sixcrp)] <- paste0("and ",sixcrp$name[nrow(sixcrp)])
+
+sixgwt <- fig3[fig3$cropname %in% c("Rice","Wheat","Corn","Soybeans","Cotton","Sorghum"),c("cropname","plan","x")]
+sixgwt <- tidyr::spread(sixgwt,plan, x)
+sixgwt$cropname <- tolower(sixgwt$cropname)
+sixgwt <- sixgwt[order(-sixgwt$SCO),]
+sixgwt$rate <- sixgwt$SCO
+sixgwt$cropname[nrow(sixgwt)-1] <- paste0("and ",sixgwt$cropname[nrow(sixgwt)-1])
+sixgwt$rate[nrow(sixgwt)-1] <- paste0("and ",sixgwt$rate[nrow(sixgwt)-1])
+sixgwt
+
+crop_avail <- readRDS("Output/crop_availability.rds")
+crop_avail <- crop_avail[!crop_avail$Commodity.Name %in% c("Rice","Wheat","Corn","Soybeans","Cotton","Sorghum","All Commodities"),]
+crop_avail <- crop_avail[order(!crop_avail$sco_use),]
+top5crp <- crop_avail[crop_avail$sco_use >= 5,]
+top5crp$txt <- paste0(tolower(top5crp$Commodity.Name)," (",round(top5crp$sco_use,2),")")
+top5crp$txt[nrow(top5crp)] <- paste0("and ",top5crp$txt[nrow(top5crp)])
+
+lowcrp <- crop_avail[crop_avail$sco_use < 1,]
+lowcrp$txt <- tolower(lowcrp$Commodity.Name)
+lowcrp$txt[nrow(lowcrp)] <- paste0("and ",lowcrp$txt[nrow(lowcrp)])
+
+``` 
+
+Despite their widespread availability, usage of SCO and ECO is surprisingly minimal. Particularly, Table 1 shows that of the `r net_acre_qty` million acres with SCO/ECO availability that were annually enrolled in the FCIP from 2015-`r endyear-2000`, only `r edr_acre_qty` million acres (i.e., `r round((edr_acre_qty/net_acre_qty)*100,2)`% of the total) were enrolled in a supplemental program. The portion of insured eligible acres annually enrolled in SCO [ECO] in `r endyear` for `r paste0(sixcrp$name,collapse = ", ")`, were `r paste0(sixcrp$rate,collapse = ", ")`, respectively. Figure 3 shows that while SCO adoption declined by `r abs(as.numeric(sixgwt$rate[6]))` percentage points among `r sixgwt$cropname[6]` producers from 2015-`r endyear-2000`, `r paste0(sixgwt$cropname[1:(nrow(sixgwt)-1)],collapse = ", ")` experienced growth estimated at `r paste0(sixgwt$rate[1:(nrow(sixgwt)-1)],collapse = ", ")` percentage points, respectively. Aside from these major crops, notable exceptions of SCO adoption that is more than 5% of eligible acres from 2015-`r endyear-2000` include `r paste0(top5crp$txt,collapse = ", ")`. On the contrary, `r paste0(lowcrp$txt,collapse = ", ")` recorded SCO adoption rates of less than 1% of eligible acres from 2015-`r endyear-2000` (see Table S2 in the online appendix).
+
+**Agent characteristics**
+```{r, include = F}
+rm(list= ls()[!(ls() %in% c(Keep.List))])
+tab01a <- readRDS("Output/FigData/book_of_business.rds")
+tab01b <- readRDS("Output/FigData/agent_summary.rds")
+county_crops <- readRDS("Output/county_crops.rds")
+
+obs_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "All"),"mean"],0))
+Corn_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Corn"),"mean"],0))
+Soybeans_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Soybeans"),"mean"],0))
+Wheat_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Wheat"),"mean"],0))
+Cotton_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Cotton"),"mean"],0))
+Rice_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Rice"),"mean"],0))
+Sorghum_n <- as.character(round(tab01b[(tab01b$Variable %in% "obs_n" & tab01b$crop_cd %in% "Grain Sorghum"),"mean"],0))
+
+cov_lvl <- round(tab01b[(tab01b$Variable %in% "cov_lvl" & tab01b$crop_cd %in% "All"),"mean"]*100,0)
+comm_amt <- round(tab01b[(tab01b$Variable %in% "comm_amt" & tab01b$crop_cd %in% "All"),"mean"]*1000,0)
+premium_rate <- round(tab01b[(tab01b$Variable %in% "premium_rate" & tab01b$crop_cd %in% "All"),"mean"]*100,0)
+Subsidy_Percent <- round(tab01b[(tab01b$Variable %in% "Subsidy_Percent" & tab01b$crop_cd %in% "All"),"mean"]*100,0)
+rep_samp <- round((tab01b[(tab01b$Variable %in% "agent_liab" & tab01b$crop_cd %in% "All"),"mean"]/
+                            tab01b[(tab01b$Variable %in% "sob_liab" & tab01b$crop_cd %in% "All"),"mean"])*100,2)
+
+n_progs <- nrow(unique(county_crops[c("state_cd", "county_cd","Commodity.Name")])) 
+
+tabcrp <- tab01b[tab01b$Variable %in% c("agent_liab","sob_liab"),c("crop_cd","Variable","mean")] 
+tabcrp <- tidyr::spread(tabcrp,Variable, mean)
+tabcrp <- tabcrp[tabcrp$crop_cd %in% c("Rice","Wheat","Corn","Soybeans","Cotton","Grain Sorghum"),]
+tabcrp$rep_samp <- round((tabcrp$agent_liab/tabcrp$sob_liab)*100,2)
+tabcrp <- tabcrp[order(-tabcrp$rep_samp),]
+tabcrp$crop_cd <- tolower(gsub("Grain ","",tabcrp$crop_cd))
+tabcrp$text01 <- paste0(tabcrp$crop_cd," at ",tabcrp$rep_samp,"%")
+tabcrp$text01[nrow(tabcrp)] <- paste0("and ",tabcrp$text01[nrow(tabcrp)])
+
+``` 
+
+The lower part of Table 1 presents selected descriptive statistics for our sample of agents, totaling `r obs_n` across all crops. Among the six major crops, the number of agents is as follows: corn with `r Corn_n` agents, soybeans with `r Soybeans_n`, wheat with `r Wheat_n`, cotton with `r Cotton_n`, sorghum with `r Sorghum_n`, and rice with `r Rice_n`. The most utilized basic insurance plan among these agents is Revenue Protection (RP), featuring a weighted average coverage level of `r cov_lvl`% and an average insured area of `r comm_amt` acres per agent. On average, these agents pay a premium of `r premium_rate` cents per dollar of liability and receive a subsidy of `r Subsidy_Percent` cents per dollar of premium for the basic policy. The agents included in our simulations represent `r rep_samp`% of the total liability of the `r n_progs` crop/county programs where SCO and ECO offerings were available from 2015-`r endyear-2000`. Among the six major crops, the simulation representation was highest for `r tabcrp$crop_cd[1]` at `r tabcrp$rep_samp[1]`%, followed by `r paste0(tabcrp$text01[2:nrow(tabcrp)],collapse = ", ")`. 
+
+
+
+
+
+
+
+
+
+
