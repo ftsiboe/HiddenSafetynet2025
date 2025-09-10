@@ -30,8 +30,10 @@ data/README.Rmd
 data/README.md
 ^SECURITY\.md$
 code_of_conduct.md
-run_workflow_compute_expected.sbatch
 run_workflow_simulation.sbatch
+run_workflow_compute_expected.sbatch
+run_workflow_aggregate_expected.sbatch
+run_workflow_compute_farm_performance_metrics.sbatch
 \\.out$
 ^.*\\.pdf$
 ^HiddenSafetynet2025_.*\.pdf$
