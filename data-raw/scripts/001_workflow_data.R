@@ -4,10 +4,27 @@ rm(list = ls(all = TRUE)); gc()
 # Load required packages (assumes they’re installed & on library path)
 library(data.table); library(rfcip)
 
-# Initialize environment
+# Initialize study environment
 devtools::document()
-study_env <- setup_environment()
+study_environment <- setup_environment(
+  year_beg = 2015, year_end = 2024, seed = 1980632,
+  project_name="HiddenSafetynet2025",
+  local_directories = list(
+    file.path("data-raw", "output","aggregate_metrics"),
+    file.path("data-raw", "output","summary"),
+    file.path("data-raw", "scripts"),
+    file.path("data", "cleaned_agents_data")
+  ),
+  fastscratch_directories=list("output/sims","output/expected","output/draw_farm"))
+
+names(study_environment$wd)[names(study_environment$wd) %in% "sims"] <- "dir_sim"
+names(study_environment$wd)[names(study_environment$wd) %in% "expected"] <- "dir_expected"
+names(study_environment$wd)[names(study_environment$wd) %in% "draw_farm"] <- "dir_drawfarm"
+
+saveRDS(study_environment,file ="data/study_environment.rds")
+
 Keep.List<-c("Keep.List",ls())
+
 
 # Clean and enrich RMA Summary of Business (SOB) data
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
@@ -28,7 +45,7 @@ saveRDS(sob,file ="data/cleaned_rma_sobtpu.rds")
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 data <- data.table::rbindlist(
   lapply(
-    study_env$year_beg:study_env$year_end,
+    study_environment$year_beg:study_environment$year_end,
     clean_rma_sco_and_eco_adm
   ),
   fill = TRUE
@@ -38,7 +55,7 @@ saveRDS(data,file ="data/cleaned_rma_sco_and_eco_adm.rds")
 # Clean agent-level data
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
 lapply(
-  study_env$year_beg:study_env$year_end,
+  study_environment$year_beg:study_environment$year_end,
   clean_agents_data
 )
 

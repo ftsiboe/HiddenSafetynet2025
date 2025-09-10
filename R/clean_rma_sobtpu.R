@@ -1,135 +1,153 @@
-#' Clean and enrich RMA Summary of Business (SOB) data
+#' Clean and aggregate RMA Summary of Business (SOB-TPU) data
+#'
 #' @description
-#' Processes RMA Summary of Business (SOB) data to produce an analysis-ready
-#' dataset with aggregated core insurance metrics and **shares** of Supplemental
-#' Coverage Option (SCO) and Enhanced Coverage Option (ECO) by coverage level.
+#' Retrieves RMA SOB-TPU records for requested years, combining **live** years
+#' (last 5 years, fetched via [rfcip::get_sob_data()]) with **stable** years
+#' (downloaded from a prebuilt `.rds` release), then filters, harmonizes
+#' insurance plan codes, coverage levels, and unit structure codes, and returns
+#' an analysis-ready `data.table` aggregated to common keys.
 #'
-#' @param study_env A list-like environment produced by [setup_environment()] that must
-#'   include `year_beg` and `year_end` (inclusive integers). Defaults to `setup_environment()`.
-#' @param output_directory Character string specifying the directory where the processed
-#'   `.rds` file should be saved. Defaults to `"data"`. The file will be
-#'   named `"cleaned_rma_sobtpu.rds"`.
+#' @param years Integer vector of commodity years.
+#' @param insurance_plan Optional integer vector of harmonized plan codes to keep after harmonization (1=YP, 2=RP, 3=RP-HPE). If `NULL`, keep all.
+#' @param acres_only Logical; keep only acres-level records. Default `TRUE`.
+#' @param addon_only Logical; exclude CAT (`coverage_type_code == "C"`). Default `TRUE`.
+#' @param harmonize_insurance_plan_code Logical; recode plans to (1,2,3). Default `TRUE`.
+#' @param harmonize_coverage_level_percent Logical; normalize coverage levels to decimal in 0.50 to 0.95 at 0.05 steps. Default `TRUE`.
+#' @param harmonize_unit_structure_code Logical; recode unit structure to (OU, BU, and EU). Default `TRUE`.
 #'
-#' @return A character message describing the processed year range and number of
-#'   output rows; the main side effect is writing an `.rds` file to disk.
+#' @return A `data.table` aggregated to the keys with columns:
+#'   `insured_acres`, `endorsed_acres`, `liability_amount`,
+#'   `total_premium_amount`, `subsidy_amount`, `indemnity_amount`.
 #'
 #' @import data.table
-#' @importFrom stats na.omit
-#' @importFrom utils write.table
 #' @importFrom rfcip get_sob_data
-#'
-#' @details
-#' The output file will be written to `file.path(output_directory, "cleaned_rma_sobtpu.rds")`.
-#' The directory is created if it does not exist.
+#' @importFrom utils download.file
 #' @export
-clean_rma_sobtpu <- function(study_env = setup_environment(), output_directory = "data") {
-  # Pull Summary of Business (SOB) data for study year
-  sob <- get_sob_data(sob_version = "sobtpu", year = study_env$year_beg:study_env$year_end)
+clean_rma_sobtpu <- function(
+    years = as.numeric(format(Sys.Date(),"%Y"))-1,
+    insurance_plan = NULL,
+    acres_only = TRUE,
+    addon_only = TRUE,
+    harmonize_insurance_plan_code = TRUE,
+    harmonize_coverage_level_percent = TRUE,
+    harmonize_unit_structure_code = TRUE
+){
+  # Pull SOB-TPU data
+  current_year <- as.numeric(format(Sys.Date(),"%Y"))
+  live_years   <- years[years %in% (current_year-5):current_year]
+  stable_years <- years[!years %in% live_years]
 
-  # Keep only desired insurance plan codes (base plans 1-3 and several endorsements)
-  sob <- sob[sob$insurance_plan_code %in% c(1:3, 31:33, 35:36, 87:89, 90), ]
-
-  # Exclude CAT coverage ('C') and keep only records reported at the Acres level
-  sob <- sob[!sob$coverage_type_code %in% "C", ]
-  sob <- sob[sob$reporting_level_type %in% "Acres", ]
-
-  # Switch to data.table for fast aggregations/joins
-  setDT(sob)
-
-  # Treat plan code 90 as plan 1 (re-map in place)
-  sob[insurance_plan_code %in% 90, insurance_plan_code := 1]
-
-  # ===== Base data aggregation =====
-  data <- sob[
-    insurance_plan_code %in% 1:3,
-    .(
-      insured_acres        = sum(net_reporting_level_amount,   na.rm = TRUE),
-      liability_amount     = sum(liability_amount,             na.rm = TRUE),
-      total_premium_amount = sum(total_premium_amount,         na.rm = TRUE),
-      subsidy_amount       = sum(subsidy_amount,               na.rm = TRUE),
-      indemnity_amount     = sum(indemnity_amount,             na.rm = TRUE)
-    ),
-    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-           "unit_structure_code", "insurance_plan_code", "coverage_type_code", "coverage_level_percent")
-  ][
-    !insured_acres %in% c(0, NA, NaN, Inf, -Inf)
-  ]
-
-  # SCO share by coverage level
-  sco_data <- sob[
-    insurance_plan_code %in% c(31:33),
-    .(sco = sum(endorsed_commodity_reporting_level_amount, na.rm = TRUE)),
-    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-           "insurance_plan_code", "coverage_level_percent")
-  ][
-    , insurance_plan_code := insurance_plan_code - 30
-  ][
-    data[, .(insured_acres = sum(insured_acres, na.rm = TRUE)),
-         by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-                "insurance_plan_code", "coverage_level_percent")],
-    on = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-           "insurance_plan_code", "coverage_level_percent"),
-    nomatch = 0
-  ][
-    , sco := sco / insured_acres
-  ]
-
-  sco_data <- unique(
-    sco_data[, c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-                 "insurance_plan_code", "coverage_level_percent", "sco"), with = FALSE]
-  )
-  data <- merge(data, sco_data, by = intersect(names(data), names(sco_data)), all = TRUE)
-
-  # ECO shares
-  eco_data <- sob[
-    insurance_plan_code %in% c(87:89),
-    .(eco = sum(endorsed_commodity_reporting_level_amount, na.rm = TRUE)),
-    by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-           "insurance_plan_code", "coverage_level_percent")
-  ][
-    , insurance_plan_code := insurance_plan_code - 86
-  ][
-    , coverage_level_percent := paste0("eco", round(coverage_level_percent * 100))
-  ][
-    !eco %in% c(0, NA, NaN, Inf, -Inf)
-  ] |> tidyr::spread(coverage_level_percent, eco)
-
-  eco_data <- as.data.table(eco_data)[
-    data[, .(insured_acres = sum(insured_acres, na.rm = TRUE)),
-         by = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code", "insurance_plan_code")],
-    on = c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code", "insurance_plan_code"),
-    nomatch = 0
-  ][
-    , eco90 := eco90 / insured_acres
-  ][
-    , eco95 := eco95 / insured_acres
-  ]
-
-  eco_data <- unique(
-    eco_data[, c("commodity_year", "state_code", "county_code", "commodity_code", "type_code", "practice_code",
-                 "insurance_plan_code", "eco90", "eco95"), with = FALSE]
-  )
-  data <- merge(data, eco_data, by = intersect(names(data), names(eco_data)), all = TRUE)
-
-  # Clean SCO/ECO shares
-  data <- as.data.frame(data)
-  for (xx in c("sco", "eco90", "eco95")) {
-    data[, xx] <- ifelse(data[, xx] %in% c(0, NA, NaN, Inf, -Inf), 0, data[, xx])
-    data[, xx] <- ifelse(data[, xx] > 1, 1, data[, xx])
+  if(length(live_years)>0){
+    live_sobtpu <- get_sob_data(sob_version = "sobtpu", year = live_years,force = TRUE)
+  }else{
+    live_sobtpu <- NULL
   }
-  data <- data[!data$insured_acres %in% c(0, NA, NaN, Inf, -Inf), ]
 
-  # Save to user-specified directory
-  if (!dir.exists(output_directory)) dir.create(output_directory, recursive = TRUE)
-  save_path <- file.path(output_directory, "cleaned_rma_sobtpu.rds")
-  saveRDS(as.data.table(data), file = save_path)
+  if(length(stable_years)>0){
+    stable_sobtpu <- tempfile(fileext = ".rds")
+    download.file(
+      "https://github.com/ftsiboe/USFarmSafetyNetLab/releases/download/sob/sobtpu_all.rds",
+      stable_sobtpu, mode = "wb", quiet = TRUE)
+    stable_sobtpu <- readRDS(stable_sobtpu)
+    data.table::setDT(stable_sobtpu)
+    stable_sobtpu <- stable_sobtpu[commodity_year %in% stable_years]
+  }else{
+    stable_sobtpu <- NULL
+  }
 
-  return(sprintf(
-    "Finished processing RMA SOB data for %s-%s (rows = %s). Saved to: %s",
-    min(data$commodity_year), max(data$commodity_year), format(nrow(data), big.mark = ","), save_path
-  ))
+  sob <- data.table::rbindlist(list(live_sobtpu,stable_sobtpu), fill = TRUE)
+
+  # Ensure data.table and expected columns
+  setDT(sob)
+  needed <- c(
+    "insurance_plan_code", "coverage_type_code", "reporting_level_type",
+    "coverage_level_percent", "commodity_year", "state_code", "county_code",
+    "commodity_code", "type_code", "practice_code", "unit_structure_code",
+    "liability_amount", "total_premium_amount", "subsidy_amount", "indemnity_amount",
+    "net_reporting_level_amount"  # adjust if your feed uses a different field name
+  )
+  missing_cols <- setdiff(needed, names(sob))
+  if (length(missing_cols)) {
+    stop(sprintf(
+      "Missing required columns in SOB-TPU feed: %s. Check field naming (e.g., net_reporting_level_amount).",
+      paste(missing_cols, collapse = ", ")
+    ))
+  }
+
+  # Basic filters
+  if (addon_only)  sob <- sob[coverage_type_code != "C"]
+  if (acres_only)  sob <- sob[reporting_level_type == "Acres"]
+
+  # Coerce types for robust recoding
+  sob[, insurance_plan_code := as.integer(insurance_plan_code)]
+  sob[, coverage_level_percent := as.numeric(coverage_level_percent)]
+
+  # Harmonize plan codes (only if requested)
+  # These three plans of insurance are similar but not identical. Some differences are:
+  # * CRC bases the insurance guarantee on the higher of the base price or the harvest period price.
+  # * IP and standard RA guarantees are determined using the base price, with no adjustment if the price increases.
+  # * RA offers up-side price protection like that of CRC as an option but IP does not.
+  # * IP limits unit formats to basic units, which include all interest in a crop in a county under identical ownership.
+  # * RA is unique in offering coverage on whole farm units, integrating coverage from two to three crops.
+  # check <- data[data$ins_plan_ab %in% c("YP","APH","IP","RP-HPE","RPHPE","CRC","RP","RA"),]
+  if(isTRUE(harmonize_insurance_plan_code)){
+    # APH[90] -> YP[1]
+    sob[insurance_plan_code %in% c(1L, 90L), insurance_plan_code := 1L]
+    # CRC[44] -> RP[2]
+    sob[insurance_plan_code %in% c(44L, 2L), insurance_plan_code := 2L]
+    # IP[42], RP-HPE[3], [25] -> RP-HPE[3]
+    sob[insurance_plan_code %in% c(25L, 42L, 3L), insurance_plan_code := 3L]
+  }
+
+  # Now, if user requested a subset of (harmonized) plans, apply it here
+  if (!is.null(insurance_plan)) {
+    keep_plans <- as.integer(insurance_plan)
+    sob <- sob[insurance_plan_code %in% keep_plans]
+  }
+
+  # Optionally harmonize unit structure codes
+  # OU - Optional Unit;
+  # UD - OU established by UDO; UA - OU established by WUA
+  # BU - Basic Unit;
+  # EU - Enterprise Unit;
+  # EP - Enterprise Unit by Irrigated/Non-Irrigated;
+  # EC - Enterprise Unit by FAC/NFAC;
+  # WU - Whole-farm Unit
+  if (isTRUE(harmonize_unit_structure_code)) {
+    sob[unit_structure_code %in% c("UD", "UA", "OU", "", NA),unit_structure_code := "OU"]
+    sob[unit_structure_code %in% c("EU", "EP", "EC", "WU"),unit_structure_code := "EU"]
+    sob[unit_structure_code %in% "BU",unit_structure_code := "BU"]
+  }
+
+  # Optionally normalize coverage levels
+  if (isTRUE(harmonize_coverage_level_percent)) {
+    # Convert >1 to decimals
+    sob[!is.na(coverage_level_percent) & coverage_level_percent > 1,coverage_level_percent := coverage_level_percent / 100]
+    # Round to nearest 0.05 and clamp to [0.50, 0.95]
+    sob[!is.na(coverage_level_percent),coverage_level_percent := pmin(0.95, pmax(0.50,round(coverage_level_percent / 0.05) * 0.05))]
+    # fix floating artifacts to 2 decimals
+    sob[!is.na(coverage_level_percent),coverage_level_percent := as.numeric(sprintf("%.2f", coverage_level_percent))]
+  }
+
+  # Aggregate (do NOT force to {1,2,3} unless you truly want that)
+  sob <- sob[
+    ,
+    .(
+      insured_acres        = sum(net_reporting_level_amount, na.rm = TRUE),
+      endorsed_acres       = sum(endorsed_commodity_reporting_level_amount, na.rm = TRUE),
+      liability_amount     = sum(liability_amount,           na.rm = TRUE),
+      total_premium_amount = sum(total_premium_amount,       na.rm = TRUE),
+      subsidy_amount       = sum(subsidy_amount,             na.rm = TRUE),
+      indemnity_amount     = sum(indemnity_amount,           na.rm = TRUE)
+    ),
+    by = .(
+      commodity_year, state_code, county_code, commodity_code, type_code, practice_code,
+      unit_structure_code, insurance_plan_code, coverage_type_code, coverage_level_percent
+    )
+  ]
+
+  # Keep rows with positive liability amount
+  sob <- sob[is.finite(liability_amount) & liability_amount > 0]
+
+  sob[]
 }
-
-
-
-

@@ -2,28 +2,42 @@
 % Please edit documentation in R/clean_rma_sobtpu.R
 \name{clean_rma_sobtpu}
 \alias{clean_rma_sobtpu}
-\title{Clean and enrich RMA Summary of Business (SOB) data}
+\title{Clean and aggregate RMA Summary of Business (SOB-TPU) data}
 \usage{
-clean_rma_sobtpu(study_env = setup_environment(), output_directory = "data")
+clean_rma_sobtpu(
+  years = as.numeric(format(Sys.Date(), "\%Y")) - 1,
+  insurance_plan = NULL,
+  acres_only = TRUE,
+  addon_only = TRUE,
+  harmonize_insurance_plan_code = TRUE,
+  harmonize_coverage_level_percent = TRUE,
+  harmonize_unit_structure_code = TRUE
+)
 }
 \arguments{
-\item{study_env}{A list-like environment produced by \code{\link[=setup_environment]{setup_environment()}} that must
-include \code{year_beg} and \code{year_end} (inclusive integers). Defaults to \code{setup_environment()}.}
+\item{years}{Integer vector of commodity years.}
 
-\item{output_directory}{Character string specifying the directory where the processed
-\code{.rds} file should be saved. Defaults to \code{"data"}. The file will be
-named \code{"cleaned_rma_sobtpu.rds"}.}
+\item{insurance_plan}{Optional integer vector of harmonized plan codes to keep after harmonization (1=YP, 2=RP, 3=RP-HPE). If \code{NULL}, keep all.}
+
+\item{acres_only}{Logical; keep only acres-level records. Default \code{TRUE}.}
+
+\item{addon_only}{Logical; exclude CAT (\code{coverage_type_code == "C"}). Default \code{TRUE}.}
+
+\item{harmonize_insurance_plan_code}{Logical; recode plans to (1,2,3). Default \code{TRUE}.}
+
+\item{harmonize_coverage_level_percent}{Logical; normalize coverage levels to decimal in 0.50 to 0.95 at 0.05 steps. Default \code{TRUE}.}
+
+\item{harmonize_unit_structure_code}{Logical; recode unit structure to (OU, BU, and EU). Default \code{TRUE}.}
 }
 \value{
-A character message describing the processed year range and number of
-output rows; the main side effect is writing an \code{.rds} file to disk.
+A \code{data.table} aggregated to the keys with columns:
+\code{insured_acres}, \code{endorsed_acres}, \code{liability_amount},
+\code{total_premium_amount}, \code{subsidy_amount}, \code{indemnity_amount}.
 }
 \description{
-Processes RMA Summary of Business (SOB) data to produce an analysis-ready
-dataset with aggregated core insurance metrics and \strong{shares} of Supplemental
-Coverage Option (SCO) and Enhanced Coverage Option (ECO) by coverage level.
-}
-\details{
-The output file will be written to \code{file.path(output_directory, "cleaned_rma_sobtpu.rds")}.
-The directory is created if it does not exist.
+Retrieves RMA SOB-TPU records for requested years, combining \strong{live} years
+(last 5 years, fetched via \code{\link[rfcip:get_sob_data]{rfcip::get_sob_data()}}) with \strong{stable} years
+(downloaded from a prebuilt \code{.rds} release), then filters, harmonizes
+insurance plan codes, coverage levels, and unit structure codes, and returns
+an analysis-ready \code{data.table} aggregated to common keys.
 }

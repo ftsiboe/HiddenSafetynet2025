@@ -1,14 +1,8 @@
-
-
 rm(list=ls(all=TRUE));gc()
 library(future.apply);library(data.table)
-# devtools::document()
-
 source("R/setup_environment.R")
 source("R/farm_performance_metrics.R")
-
-study_environment <- setup_environment()
-Keep.List<-c("Keep.List",ls())
+study_environment <- readRDS("data/study_environment.rds")
 
 function(){
   unlink(study_environment$wd$dir_drawfarm,recursive = T)
@@ -57,8 +51,8 @@ function(){
 work_list <- readRDS("data-raw/work_list_compute_metrics.rds")
 
 if(!is.na(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")))){
-  work_list <- work_list[as.numeric(work_list$draw) %in% as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
-  #work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
+  #work_list <- work_list[as.numeric(work_list$draw) %in% as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
+  work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
 }
 
 gc()

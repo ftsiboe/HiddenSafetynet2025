@@ -1,8 +1,7 @@
 rm(list=ls(all=TRUE));gc();gc()
 library(future.apply);library(data.table)
 devtools::document()
-study_environment <- setup_environment()
-Keep.List<-c("Keep.List",ls())
+study_environment <- readRDS("data/study_environment.rds")
 
 # unlink(dir_sim,recursive = T)
 dir.create(study_environment$wd$dir_sim)

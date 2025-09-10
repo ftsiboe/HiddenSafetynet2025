@@ -5,58 +5,79 @@
 \title{Setup Project Environment}
 \usage{
 setup_environment(
-  year_beg = 2015,
-  year_end = 2024,
+  year_beg = 2001,
+  year_end = as.numeric(format(Sys.Date(), "\%Y")),
   seed = 1980632,
-  fastscratch_root = NULL
+  project_name,
+  local_directories = list(file.path("data-raw", "output"), file.path("data-raw",
+    "scripts"), file.path("data")),
+  fastscratch_root = NULL,
+  fastscratch_directories = NULL
 )
 }
 \arguments{
-\item{year_beg}{Integer. Beginning year of the analysis (default: 2015).}
+\item{year_beg}{Integer. Beginning year of the analysis (default: 2001).}
 
-\item{year_end}{Integer. Ending year of the analysis (default: 2024).}
+\item{year_end}{Integer. Ending year of the analysis
+(default: current system year).}
 
 \item{seed}{Integer. Random seed for reproducibility (default: 1980632).}
 
-\item{fastscratch_root}{Optional character. Root directory where intermediate
-files from simulations and estimations will be written for later aggregation.
-If \code{NULL}, it is set automatically based on the operating system:
+\item{project_name}{Character. Project name (required). Used to build
+fast-scratch directory paths.}
+
+\item{local_directories}{List of project-local directories to create
+(default: \code{list("data-raw/output", "data-raw/scripts", "data")}).}
+
+\item{fastscratch_root}{Optional character. Root directory for fast-scratch
+files. If \code{NULL}, it is set automatically:
 \itemize{
 \item Windows: \code{"C:/fastscratch"}
 \item Linux/macOS: \code{"/fastscratch/<username>"}
 }}
+
+\item{fastscratch_directories}{List of fast-scratch subdirectories (relative
+to \code{<fastscratch_root>/<project_name>}) to create. If \code{NULL},
+no fast-scratch subdirectories are created and \code{wd} is returned as an
+empty list.}
 }
 \value{
 A list with:
 \describe{
-\item{wd}{Named list of working directories (fastscratch root and subfolders).}
+\item{wd}{Named list of created fast-scratch directories. Empty if
+\code{fastscratch_directories = NULL}.}
 \item{year_beg}{Starting year (integer).}
 \item{year_end}{Ending year (integer).}
+\item{seed}{Seed value used for RNG.}
 }
 }
 \description{
-Loads project settings, creates working directories (both under a fast scratch
-area and in the project), sets useful \code{options()}, fixes the RNG seed, and
-stores the analysis year range.
+Initializes the working environment for a project by creating required
+directories, setting useful global options, and fixing the random seed.
 }
 \details{
-Creates these directories (if absent):
+The function ensures the requested directories exist, creating them if
+necessary. Directory keys in the returned \code{wd} list are the basenames of
+the provided \code{fastscratch_directories}.
+
+It also sets the following options:
 \itemize{
-\item Fast scratch tree (for large, intermediate outputs):
-\code{<fastscratch_root>/HiddenSafetynet2025/output/} with subfolders
-\code{sims}, \code{expected}, \code{draw_farm}, \code{draw_cost}.
-\item Project-local (for smaller, version-controlled artifacts):
-\code{data/}, \code{data/output/}, \code{data/cleaned_agents_data/}.
+\item \code{options(scipen = 999)} (turns off scientific notation)
+\item \code{options(future.globals.maxSize = 8 * 1024^3)} (~8 GiB)
+\item \code{options(dplyr.summarise.inform = FALSE)} (quiet \pkg{dplyr})
 }
 
-Sets:
-\itemize{
-\item \code{options(scipen = 999)}
-\item \code{options(future.globals.maxSize = 8 * 1024^3)}  (= 8 GiB)
-\item \code{options(dplyr.summarise.inform = FALSE)}
-\item \code{set.seed(seed)}
+Finally, the random number generator is seeded with the provided \code{seed}.
+}
+\examples{
+\dontrun{
+env <- setup_environment(
+  year_beg = 2015,
+  year_end = 2024,
+  project_name = "HiddenSafetynet2025",
+  fastscratch_directories = c("output/sims", "output/expected")
+)
+str(env$wd)
 }
 
-Requires the packages \pkg{future.apply}, \pkg{rfcip}, \pkg{data.table},
-and \pkg{rfcipCalcPass}.
 }

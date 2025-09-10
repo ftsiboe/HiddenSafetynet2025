@@ -1,9 +1,7 @@
-
 rm(list=ls(all=TRUE));gc();gc()
 library(future.apply);library(data.table)
 devtools::document()
-study_environment <- setup_environment()
-Keep.List<-c("Keep.List",ls())
+study_environment <- readRDS("data/study_environment.rds")
 
 function(){
   work_list <-as.data.frame(
