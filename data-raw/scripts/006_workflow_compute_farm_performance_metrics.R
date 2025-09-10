@@ -44,10 +44,13 @@ function(){
                dir.create(paste0(study_environment$wd$dir_drawfarm,stringr::str_pad(draw,pad="0",4)))
                return(data.frame(draw=stringr::str_pad(draw,pad="0",4),work_list))}), fill = TRUE))
 
-  work_list <- work_list[!gsub("__","_",paste0(work_list$draw,"/",gsub("[+]","_",work_list$combination),"_",
-                                               work_list$crop_yr,"_",work_list$draw,".rds")) %in%
-                           list.files(study_environment$wd$dir_drawfarm,recursive = T),]
+  work_list$output_file_path <- file.path(study_environment$wd$dir_drawfarm, work_list$draw, paste0(gsub("[+]","_", work_list$combination), "_", work_list$year, work_list$draw, ".rds"))
+  work_list$output_file_path <- gsub(" ", "_", work_list$output_file_path)
+  work_list$output_file_path <- gsub("__", "_", work_list$output_file_path)
 
+  work_list <- work_list[!work_list$output_file_path %in% list.files(study_environment$wd$dir_drawfarm,recursive = T,full.names = T),]
+
+  table(work_list$combination,work_list$draw)
   saveRDS(work_list,file="data-raw/work_list_compute_metrics.rds")
 }
 
@@ -89,7 +92,8 @@ future_lapply(
           expected_directory    = study_environment$wd$dir_expected,
           draw                  = draw,
           draw_list_file_path   = "data-raw/draw_list.rds",
-          disaggregates         = c("CROP","STATE","CROP_STATE","ERSReg","CRD","COUNTY","insurance_plan_code","PLAN","RPYP","coverage_level_percent","COV","STRUCT","unit_structure_code"),
+          disaggregates         = c("CROP","STATE","CROP_STATE","ERSReg","CRD","COUNTY","insurance_plan_code","PLAN",
+                                    "RPYP","coverage_level_percent","COV","STRUCT","unit_structure_code"),
           output_file_path      = output_file_path,
           distributional_limits = c(0.05, 0.95))
 

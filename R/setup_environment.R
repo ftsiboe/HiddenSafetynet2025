@@ -84,7 +84,8 @@ setup_environment <- function(
 
   # Project-local dirs (standardized under data/)
   dir.create("data", recursive = TRUE, showWarnings = FALSE)
-  dir.create(file.path("output"), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path("data-raw", "output","summary"), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path("data-raw", "output","figure_data"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path("data", "cleaned_agents_data"), recursive = TRUE, showWarnings = FALSE)
 
   # ---- Options ----
