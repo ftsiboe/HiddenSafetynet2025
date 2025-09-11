@@ -664,11 +664,6 @@ dispatcher_supplemental_simulation <- function(
     agents_directory = "data/cleaned_agents_data",
     cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds",
     output_directory = NULL){
-
-  if(is.null(output_directory)){
-    output_directory <- file.path(study_environment$wd$dir_sim,year)
-  }
-
   #--------------------------------------------------------------
   # Build agent simulation panel                              ####
   cleaned_agents_data <- build_agent_simulation_data(year = year,sim  = sim,agents_directory = agents_directory)

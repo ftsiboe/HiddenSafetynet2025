@@ -38,7 +38,7 @@ function(){
                dir.create(paste0(study_environment$wd$dir_drawfarm,stringr::str_pad(draw,pad="0",4)))
                return(data.frame(draw=stringr::str_pad(draw,pad="0",4),work_list))}), fill = TRUE))
 
-  work_list$output_file_path <- file.path(study_environment$wd$dir_drawfarm, work_list$draw, paste0(gsub("[+]","_", work_list$combination), "_", work_list$year, work_list$draw, ".rds"))
+  work_list$output_file_path <- file.path(study_environment$wd$dir_drawfarm, work_list$draw, paste0(gsub("[+]","_", work_list$combination), "_", work_list$year,"_", work_list$draw, ".rds"))
   work_list$output_file_path <- gsub(" ", "_", work_list$output_file_path)
   work_list$output_file_path <- gsub("__", "_", work_list$output_file_path)
 
@@ -69,7 +69,7 @@ future_lapply(
       year  <- work_list$year[ii]
       output_directory <- study_environment$wd$dir_drawfarm
 
-      output_file_path <- file.path(output_directory, draw, paste0(gsub("[+]","_", combo), "_", year, draw, ".rds"))
+      output_file_path <- file.path(output_directory, draw, paste0(gsub("[+]","_", combo), "_", year,"_", draw, ".rds"))
       output_file_path <- gsub(" ", "_", output_file_path)
       output_file_path <- gsub("__", "_", output_file_path)
 
@@ -97,8 +97,4 @@ future_lapply(
   })
 
 plan(sequential)
-
-
-
-
 

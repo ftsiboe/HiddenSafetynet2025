@@ -3,8 +3,7 @@ library(future.apply);library(data.table)
 devtools::document()
 study_environment <- readRDS("data/study_environment.rds")
 
-# unlink(dir_sim,recursive = T)
-dir.create(study_environment$wd$dir_sim)
+# unlink(study_environment$wd$dir_sim, recursive = T)
 lapply(
   as.numeric(gsub("[^0-9]","",list.files("data/cleaned_agents_data"))),
   function(year){
@@ -77,7 +76,8 @@ lapply(
 
         dispatcher_supplemental_simulation(
           sim = sim,year = year,agents_directory = "data/cleaned_agents_data",
-          cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds")
+          cleaned_rma_sco_and_eco_adm_file_path ="data/cleaned_rma_sco_and_eco_adm.rds",
+          output_directory=file.path(study_environment$wd$dir_sim,year))
 
         }
       invisible()
