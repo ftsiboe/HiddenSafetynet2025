@@ -27,3 +27,24 @@ lapply(
   output_directory = study_environment$wd$dir_expected)
 
 
+
+function(){
+
+  dest_dir <- "data-raw/expected"
+  dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
+  file.copy(from=list.files(study_environment$wd$dir_expected, full.names = T, pattern = "expected_"),
+            to = dest_dir,
+            overwrite = TRUE, recursive = FALSE, copy.mode = TRUE)
+
+}
+
+
+
+
+
+
+
+
+
+
+

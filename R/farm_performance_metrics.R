@@ -238,7 +238,7 @@ farm_performance_metrics <- function(
 
     # fast inner join: keep only rows present in the draw list
     setkeyv(draw_tbl, join_keys)
-    data <- data[draw_tbl, on = join_keys, nomatch = 0];rm(draw_tbl)
+    data <- data[draw_tbl, on = join_keys, nomatch = 0,allow.cartesian=TRUE];rm(draw_tbl)
   }
 
   # ensure change columns exist for all paths

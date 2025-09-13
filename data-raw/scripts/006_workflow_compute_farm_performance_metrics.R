@@ -17,7 +17,7 @@ function(){
 
 function(){
 
-  work_list <- unique(readRDS(file.path(study_environment$wd$dir_expected,"expected_2022.rds"))$combination)
+  work_list <- unique(readRDS("data-raw/expected/expected_2022.rds")$combination)
 
   year_list <- as.numeric(list.files(study_environment$wd$dir_expected))
   year_list <- year_list[! year_list %in% NA]
@@ -35,7 +35,7 @@ function(){
     data.table::rbindlist(
       lapply(0:100,
              function(draw){
-               dir.create(paste0(study_environment$wd$dir_drawfarm,stringr::str_pad(draw,pad="0",4)))
+               dir.create(file.path(study_environment$wd$dir_drawfarm,stringr::str_pad(draw,pad="0",4)))
                return(data.frame(draw=stringr::str_pad(draw,pad="0",4),work_list))}), fill = TRUE))
 
   work_list$output_file_path <- file.path(study_environment$wd$dir_drawfarm, work_list$draw, paste0(gsub("[+]","_", work_list$combination), "_", work_list$year,"_", work_list$draw, ".rds"))
@@ -51,8 +51,12 @@ function(){
 work_list <- readRDS("data-raw/work_list_compute_metrics.rds")
 
 if(!is.na(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")))){
+
+  work_list$TASK <- rep(as.numeric(Sys.getenv("SLURM_ARRAY_TASK_MIN")):as.numeric(Sys.getenv("SLURM_ARRAY_TASK_MAX")), length=nrow(work_list))
+  work_list <- work_list[work_list$TASK %in% as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
+
   #work_list <- work_list[as.numeric(work_list$draw) %in% as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
-  work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
+  #work_list <- work_list[as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID")),]
 }
 
 gc()
@@ -83,7 +87,7 @@ future_lapply(
           outcome_list          = c("its","Iits","rrs1","rrs2","rrs3","Irrs1","Irrs2","Irrs3","sner1","sner2","sner3",
                                     "Simrate","SimrateP","Simsuby","Simlcr","rrp1","rrp2","rrp3","itp"),
           weight_variable       = "insured_acres",
-          expected_directory    = study_environment$wd$dir_expected,
+          expected_directory    = "data-raw/expected",
           draw                  = draw,
           draw_list_file_path   = "data-raw/draw_list.rds",
           disaggregates         = c("CROP","STATE","CROP_STATE","ERSReg","CRD","COUNTY","insurance_plan_code","PLAN",
@@ -92,7 +96,9 @@ future_lapply(
           distributional_limits = c(0.05, 0.95))
 
       }
+
       invisible(output_file_path)
+
     }, error = function(e){invisible()})
   })
 

@@ -4,7 +4,7 @@ devtools::document()
 study_environment <- readRDS("data/study_environment.rds")
 
 function(){
-  work_list <- unique(readRDS(file.path(study_environment$wd$dir_expected,"expected_2022.rds"))$combination)
+  work_list <- unique(readRDS("data-raw/expected/expected_2022.rds")$combination)
 
   work_list <- rbind(
     data.frame(year_min=2015,year_max=2023,combination=work_list),

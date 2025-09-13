@@ -29,7 +29,7 @@ lapply(
   1:nrow(work_list),
   function(work){
     tryCatch({
-      # work <- 2
+      # work <- 1
       year <- work_list$year[work]
       task_id <- work_list$task[work]
 

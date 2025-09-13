@@ -5,7 +5,7 @@ devtools::document()
 study_environment <- readRDS("data/study_environment.rds")
 
 
-expected_directory = study_environment$wd$dir_expected
+expected_directory = "data-raw/expected"
 output_directory = NULL
 draw_identifiers = c("state_code","county_code","commodity_code","type_code","practice_code")
 seed = NULL

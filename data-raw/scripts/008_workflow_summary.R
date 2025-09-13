@@ -66,5 +66,3 @@ data <- as.data.frame(
 data$combination <- as.numeric(gsub("[^0-9]","",data$combination))
 saveRDS(data,file="data-raw/output/summary/impact_incremental.rds")
 
-
-

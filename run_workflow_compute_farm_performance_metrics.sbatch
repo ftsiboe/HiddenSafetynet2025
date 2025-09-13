@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --mem=50G
-#SBATCH --array=0-100
+#SBATCH --array=1-3087
 #SBATCH --mail-user=ftsiboe@hotmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --output=/dev/null
