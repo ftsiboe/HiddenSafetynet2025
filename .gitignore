@@ -16,3 +16,4 @@ data/*/*/*.rds
 !data-raw/scripts/
 !data-raw/narratives/
 !data-raw/supplementary_files/
+!data-raw/output/supplemental_protection_RESULTS.xlsx

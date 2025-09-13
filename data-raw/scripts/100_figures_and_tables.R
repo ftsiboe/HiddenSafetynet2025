@@ -127,8 +127,8 @@ sf_object <- sf_object[!sf_object$plan %in% c(NA,NaN,Inf,-Inf),]
 fig <- ggplot() +
   geom_sf(data = cty_sf, colour = "dimgray", fill = "darkblue",size =0.01) +
   geom_sf(data = sf_object,aes(fill = cat), colour = NA,size = 0.2) +
-  geom_sf(data = cty_sf, colour = "dimgray", fill = NA,size =0.01) +
-  geom_sf(data = us_sf, colour = "black", fill = NA,size =0.01) +
+  geom_sf(data = cty_sf, colour = "dimgray", fill = NA,size =0.1) +
+  geom_sf(data = us_sf, colour = "black", fill = NA,size =0.3) +
   scale_fill_manual(values=c("darkblue","red","orange","yellow",
                              colorRampPalette(c("yellowgreen","darkgreen"))(6)),
                     na.value="gainsboro", name="Payouts per operation") +
@@ -1037,7 +1037,7 @@ lapply(
 
     fig <- ggplot() +
       geom_sf(data = sf_object,aes(fill = cat), colour = NA,size = 0.2) +
-      geom_sf(data = us_sf, colour = "black", fill = NA,size =0.01) +
+      geom_sf(data = us_sf, colour = "black", fill = NA,size =0.1) +
       scale_fill_manual(values=clo,
                         na.value="white", name= lbli) +
       guides(fill = guide_legend(nrow=1)) +
@@ -1153,7 +1153,7 @@ lapply(
 
     fig <- ggplot() +
       geom_sf(data = sf_object,aes(fill = cat), colour = NA,size = 0.2) +
-      geom_sf(data = us_sf, colour = "black", fill = NA,size =0.01) +
+      geom_sf(data = us_sf, colour = "black", fill = NA,size =0.1) +
       scale_fill_manual(values=clo,na.value="white", name=lbli) +
       guides(fill = guide_legend(nrow=1)) +
       labs(subtitle = "",x = "", y = "", fill='',caption = "") +
