@@ -30,13 +30,14 @@ download.file(
   "https://github.com/ftsiboe/USFarmSafetyNetLab/releases/download/sob/sobtpu_all.rds",
   sobtpu_all, mode = "wb", quiet = TRUE)
 sobtpu_all <- as.data.frame(readRDS(sobtpu_all))
+sobtpu_all$commodity_name <- tolower(sobtpu_all$commodity_name)
 
 sobcov_all <- tempfile(fileext = ".rds")
 download.file(
   "https://github.com/ftsiboe/USFarmSafetyNetLab/releases/download/sob/sobcov_all.rds",
   sobcov_all, mode = "wb", quiet = TRUE)
 sobcov_all <- as.data.frame(readRDS(sobcov_all))
-
+sobcov_all$commodity_name <- tolower(sobcov_all$commodity_name)
 Keep.List<-c("Keep.List",ls())
 #--------------------------------------------------------------------------------------------------------------
 # state major crop                                                                                          ####
@@ -386,7 +387,7 @@ function(){
 #--------------------------------------------------------------------------------------------------------------
 # Table: Means and Standard Deviations of US Federal Crop Insurance Pools (2015-Date)                       ####
 rm(list= ls()[!(ls() %in% c(Keep.List))]);gc()
-sob_book <- readRDS("data/supplemental_offering_and_adoption.rds")
+sob_book <- as.data.frame(readRDS("data/supplemental_offering_and_adoption.rds"))
 sob_book <- sob_book[sob_book$avail_aph %in% 1,]
 sob_book <- sob_book[!(sob_book$avail_sco %in% 0 & sob_book$avail_eco90 %in% 0 & sob_book$avail_eco95 %in% 0),]
 sob_book <- sob_book[sob_book$commodity_year %in% 2015:study_environment$year_end,]
@@ -400,17 +401,19 @@ sob_book$commodity_code <- ifelse(sob_book$commodity_code %in% 59,51,sob_book$co
 sob_book$commodity_code <- ifelse(sob_book$commodity_code %in% c(229,230,231,232,233,234,235,236),229,sob_book$commodity_code)
 sob_book$commodity_code <- ifelse(sob_book$commodity_code %in% c(88,332,33,32,102,107),88,sob_book$commodity_code)
 sob_book <- sob_book[sob_book$insurance_plan_code %in% c(31:33,87:89,1:3,90),]
-
 sob_book <- sob_book[!sob_book$liability_amount %in% c(0,NA,Inf,-Inf,NaN),]
+
+sob_book$commodity_name <- ifelse(grepl("cotton",sob_book$commodity_name),"cotton",sob_book$commodity_name)
+sob_book$commodity_name <- ifelse(grepl("sorghum",sob_book$commodity_name),"sorghum",sob_book$commodity_name)
+sob_book$commodity_name <- ifelse(grepl("tobacco",sob_book$commodity_name),"tobacco",sob_book$commodity_name)
+
+county_crops <- unique(sob_book[c("state_code", "county_code","commodity_name","commodity_code")])
+saveRDS(county_crops,file="data-raw/output/figure_data/county_crops.rds")
+
 sob_book_crop <- sob_book[sob_book$commodity_code %in% unique(readRDS("data-raw/draw_list.rds")[[1]]$commodity_code),]
 sob_book00 <- sob_book
 sob_book00$commodity_code <- 0
-#sob_book <- rbind(sob_book00,sob_book,sob_book_crop)
 sob_book <- rbind(sob_book00,sob_book_crop)
-
-county_crops <- dplyr::inner_join(unique(sob_book[c("state_code", "county_code","commodity_code")]),readRDS("data-raw/output/figure_data/crop_availability.rds"))
-county_crops <- unique(county_crops[c("state_code", "county_code","commodity_name","commodity_code")])
-saveRDS(county_crops,file="data-raw/output/figure_data/county_crops.rds")
 
 setDT(sob_book)
 
@@ -1181,4 +1184,16 @@ lapply(
     return(variable)})
 
 #--------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 
